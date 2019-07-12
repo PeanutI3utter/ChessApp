@@ -1,12 +1,9 @@
 package GameCore;
 
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +12,7 @@ import com.example.chess.R;
 
 import GameCore.Figure.Bishop;
 import GameCore.Figure.Figure;
-import GameCore.Figure.Horse;
+import GameCore.Figure.Knight;
 import GameCore.Figure.King;
 import GameCore.Figure.Pawn;
 import GameCore.Figure.PlaceHolder;
@@ -62,6 +59,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
             }
         }
 
+        board[4][4].setBackgroundColor(Color.WHITE);
 
 
         //get all field buttons
@@ -95,7 +93,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                             break;
                         case 1:
                         case 6:
-                            figureField[i][j] = new Horse(player);
+                            figureField[i][j] = new Knight(player);
                             break;
                         case 2:
                         case 5:
@@ -133,6 +131,28 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
             }
         }
     }
+
+
+    private int getX(Integer pos){
+        return pos / 10 - 1;
+    }
+
+    private int getY(Integer pos){
+        return pos % 10 - 1;
+    }
+
+
+    private void resetBoardColors(){
+        for(int vertical = 0; vertical < 8; vertical++){
+            for(int horizontal = 0; horizontal < 8; horizontal++){
+                if((vertical + horizontal) % 2 != 0)
+                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boardlightbrown));
+                else
+                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boarddarkbrown));
+            }
+        }
+    }
+
 
 
     @Override
