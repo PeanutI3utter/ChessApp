@@ -2,6 +2,7 @@ package GameCore;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -9,6 +10,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chess.R;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import GameCore.Figure.Bishop;
 import GameCore.Figure.Figure;
@@ -48,19 +52,16 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
         //load board image
         board = new View[8][8];
-        for(int vertical = 0; vertical < 8; vertical++){
-            for(int horizontal = 0; horizontal < 8; horizontal++){
+        for(int vertical = 0; vertical < 8; vertical++) {
+            for (int horizontal = 0; horizontal < 8; horizontal++) {
                 int id = getResources().getIdentifier("f" + ((vertical + 1) * 10 + (horizontal + 1)), "id", getPackageName());
                 board[vertical][horizontal] = findViewById(id);
-                if((vertical + horizontal) % 2 != 0)
-                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boardlightbrown));
-                else
+                if ((vertical + horizontal) % 2 != 0)
                     board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boarddarkbrown));
+                else
+                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boardlightbrown));
             }
         }
-
-        board[4][4].setBackgroundColor(Color.WHITE);
-
 
         //get all field buttons
         fields = new ImageButton[8][8];
@@ -76,42 +77,42 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         player1 = new Human(true);
         player2 = new Human(false);
         Player player;
-        for(int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (i == 0 | i == 1)
+        for(int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                if (x == 0 | x == 1)
                     player = player2;
-                else if (i == 6 | i == 7)
+                else if (x == 6 | x == 7)
                     player = player1;
                 else
                     player = null;
 
-                if (i == 0 | i == 7)
-                    switch (j) {
+                if (x == 0 | x == 7)
+                    switch (y) {
                         case 0:
                         case 7:
-                            figureField[i][j] = new Rook(player);
+                            figureField[x][y] = new Rook(player, x, y);
                             break;
                         case 1:
                         case 6:
-                            figureField[i][j] = new Knight(player);
+                            figureField[x][y] = new Knight(player, x, y);
                             break;
                         case 2:
                         case 5:
-                            figureField[i][j] = new Bishop(player);
+                            figureField[x][y] = new Bishop(player, x, y);
                             break;
                         case 4:
-                            figureField[i][j] = new King(player);
+                            figureField[x][y] = new King(player, x, y);
                             break;
                         case 3:
-                            figureField[i][j] = new Queen(player);
+                            figureField[x][y] = new Queen(player, x, y);
                             break;
                         default:
-                            figureField[i][j] = new PlaceHolder(null);
+                            figureField[x][y] = new PlaceHolder(null, x, y);
                     }
-                else if (i == 1 | i == 6)
-                    figureField[i][j] = new Pawn(player);
+                else if (x == 1 | x == 6)
+                    figureField[x][y] = new Pawn(player, x, y);
                 else
-                    figureField[i][j] = new PlaceHolder(player);
+                    figureField[x][y] = new PlaceHolder(player, x, y);
             }
         }
         draw();
@@ -133,22 +134,21 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     }
 
 
-    private int getX(Integer pos){
-        return pos / 10 - 1;
+    private int getX(int pos){
+        return pos / 10;
+    }
+    private int getY(int pos){
+        return pos % 10;
     }
 
-    private int getY(Integer pos){
-        return pos % 10 - 1;
-    }
 
-
-    private void resetBoardColors(){
+    private void resetBoardColors() {
         for(int vertical = 0; vertical < 8; vertical++){
             for(int horizontal = 0; horizontal < 8; horizontal++){
                 if((vertical + horizontal) % 2 != 0)
-                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boardlightbrown));
-                else
                     board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boarddarkbrown));
+                else
+                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boardlightbrown));
             }
         }
     }
@@ -161,9 +161,22 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         id = id.substring(id.length() - 2);
         Integer fieldnumber = Integer.parseInt(id);
         Figure figure = figureField[fieldnumber / 10 - 1][fieldnumber % 10 - 1];
-        Toast toast = Toast.makeText(getApplicationContext(), figure.getClass().getName() + (fieldnumber / 10) + "|" + (fieldnumber % 10), Toast.LENGTH_SHORT);
+        Toast toast = Toast.makeText(getApplicationContext(), figure.getClass().getName() + (fieldnumber / 10 - 1) + "|" + (fieldnumber % 10 - 1), Toast.LENGTH_SHORT);
         toast.show();
+
+
+        highlight(figure.availableMoves(null));
     }
+
+    public void highlight(ArrayList<Pair<Integer, Integer>> moves) {
+        resetBoardColors();
+        if (!moves.isEmpty()) {
+            for (Pair move : moves) {
+                board[(int) move.first][(int) move.second].setBackgroundColor(Color.YELLOW);
+            }
+        }
+    }
+
 
 
 }

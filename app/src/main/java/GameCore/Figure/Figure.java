@@ -1,37 +1,44 @@
 package GameCore.Figure;
 
+import android.os.Build;
+import android.util.Pair;
+
+import androidx.annotation.RequiresApi;
+
+import java.util.ArrayList;
+
 import GameCore.Player;
 
 public abstract class Figure {
     protected Player owner;
     protected int image;
-    private int x;
-    private int y;
+    protected int x;
+    protected int y;
 
 
-    public void setX(int x){
-        this.x = x;
-    }
 
-    public void setY(int y){
-        this.y = y;
-    }
 
-    public int getX(){
-        return x;
-    }
-
-    public int getY(){
-        return y;
-    }
-
-    public Figure(Player owner){
+    public Figure(Player owner, int x, int y){
         this.owner = owner;
+        this.x = x;
+        this.y = y;
     }
 
     public int getImage(){
         return image;
     }
 
-    abstract public Integer[] availableMoves(Figure[][] field);
+    abstract public ArrayList<Pair<Integer, Integer>> availableMoves(Figure[][] field);
+
+    protected ArrayList<Pair<Integer, Integer>> valid(ArrayList<Pair<Integer, Integer>> moves) {
+        ArrayList<Pair<Integer, Integer>> validMoves = new ArrayList<>();
+        if (!moves.isEmpty()) {
+            for (Pair move : moves) {
+                if (!((int) move.first < 0 || (int) move.first > 7 || (int) move.second < 0 || (int) move.second > 7 )) {
+                    validMoves.add(move);
+                }
+            }
+        }
+        return validMoves;
+    }
 }
