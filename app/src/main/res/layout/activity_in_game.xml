@@ -1725,14 +1725,24 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <view
+    <androidx.constraintlayout.widget.ConstraintLayout
         class="androidx.appcompat.widget.Toolbar"
         android:id="@+id/topbar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@color/menubackground"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <View
+            android:id="@+id/currentcolor"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottommenu"

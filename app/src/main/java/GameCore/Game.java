@@ -35,6 +35,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     int fieldH;
     View[][] board;
     Player currentPlayer;
+    View currentColor;
 
 
     @Override
@@ -52,6 +53,8 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         player2 = new Human(false);
         queue = new PlayerQueue(player1, player2);
         currentPlayer = queue.next();
+        currentColor = findViewById(R.id.currentcolor);
+        currentColor.setBackgroundColor(Color.WHITE);
 
         //load board image
         board = new View[8][8];
@@ -223,9 +226,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
             if (figure instanceof PlaceHolder) {
                 if (selected.getMd(figureField).getAvailableMoves().contains(figure.getPos())) {
                     move(selected, figure.getPos());
-                    currentPlayer = queue.next();
-                    selected = null;
-                    resetBoardColors();
+                    nextMove();
                 } else {
                     selected = null;
                     resetBoardColors();
@@ -237,7 +238,8 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
             } else {
                 if (selected.getMd(figureField).getAttackbleFields().contains(figure.getPos())) {
                     move(selected, figure.getPos());
-                    currentPlayer = queue.next();
+                    nextMove();
+                } else {
                     selected = null;
                     resetBoardColors();
                 }
@@ -246,6 +248,13 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         draw();
     }
 
+
+    public void nextMove() {
+        currentPlayer = queue.next();
+        selected = null;
+        currentColor.setBackgroundColor(currentPlayer.getPlayerColor());
+        resetBoardColors();
+    }
 
     // highlight all available moves for selected figure
     public void highlight(Figure fig) {
