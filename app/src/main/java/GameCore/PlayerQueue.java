@@ -1,15 +1,15 @@
 package GameCore;
 
 public class PlayerQueue {
-    Player next;
-    Player nextAfter;
+    private Player next;
+    private Player nextAfter;
 
     public PlayerQueue(Player Start, Player second){
         next = Start;
         nextAfter = second;
     }
 
-    public Player getNext(){
+    public Player next() {
         Player ret = next;
         next = nextAfter;
         nextAfter = ret;

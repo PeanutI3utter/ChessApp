@@ -22,11 +22,11 @@ public class King extends Figure {
     }
 
     @Override
-    public MoveData availableMoves(Figure[][] field) {
+    public void availableMoves(Figure[][] field) {
         MoveData md = new MoveData();
         horizontalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 1, UP, DOWN);
         verticalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 1, RIGHT, LEFT);
         diagonalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 1, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
-        return md;
+        setMd(md);
     }
 }

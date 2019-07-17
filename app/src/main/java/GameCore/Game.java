@@ -5,7 +5,6 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,6 +34,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     int fieldW;
     int fieldH;
     View[][] board;
+    Player currentPlayer;
 
 
     @Override
@@ -50,6 +50,8 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         fieldH = 8;
         player1 = new Human(true);
         player2 = new Human(false);
+        queue = new PlayerQueue(player1, player2);
+        currentPlayer = queue.next();
 
         //load board image
         board = new View[8][8];
@@ -145,6 +147,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                             break;
                         case 4:
                             figureField[x][y] = new King(player, x, y);
+
                             break;
                         case 3:
                             figureField[x][y] = new Queen(player, x, y);
@@ -168,13 +171,17 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 Figure fig = figureField[h][v];
                 ImageButton field = fields[h][v];
                 if(fig instanceof PlaceHolder)
-                    field.setVisibility(View.INVISIBLE);
-                else{
+                    field.setImageResource(android.R.color.transparent);
+                else
                     field.setImageResource(fig.getImage());
-                    field.setVisibility(View.VISIBLE);
-                }
             }
         }
+    }
+
+    public void move(Figure fig, Point point) {
+        figureField[fig.getX()][fig.getY()] = new PlaceHolder(null, fig.getX(), fig.getY());
+        figureField[point.x][point.y] = fig;
+        fig.setPos(point);
     }
 
 
@@ -202,30 +209,67 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     @Override
     //OnClickListener for figures
     public void onClick(View view) {
-        String id = getResources().getResourceEntryName(view.getId());
-        id = id.substring(id.length() - 2);
-        Integer fieldnumber = Integer.parseInt(id);
-        Figure figure = figureField[fieldnumber % 10 - 1][fieldnumber / 10 - 1];
-        Toast toast = Toast.makeText(getApplicationContext(), figure.getClass().getName() + (fieldnumber % 10 - 1) + "|" + (fieldnumber / 10 - 1), Toast.LENGTH_SHORT);
-        toast.show();
-
-
-        highlight(figure, figure.availableMoves(figureField));
+        Figure figure = getClickedField(view.getId());
+        if (selected == null) {
+            if (figure instanceof PlaceHolder)
+                return;
+            if (figure.getOwner() == currentPlayer) {
+                selected = figure;
+                selected.availableMoves(figureField);
+                highlight(figure);
+            }
+        } else {
+            selected.availableMoves(figureField);
+            if (figure instanceof PlaceHolder) {
+                if (selected.getMd(figureField).getAvailableMoves().contains(figure.getPos())) {
+                    move(selected, figure.getPos());
+                    currentPlayer = queue.next();
+                    selected = null;
+                    resetBoardColors();
+                } else {
+                    selected = null;
+                    resetBoardColors();
+                }
+            } else if (figure.getOwner() == currentPlayer) {
+                resetBoardColors();
+                selected = figure;
+                highlight(figure);
+            } else {
+                if (selected.getMd(figureField).getAttackbleFields().contains(figure.getPos())) {
+                    move(selected, figure.getPos());
+                    currentPlayer = queue.next();
+                    selected = null;
+                    resetBoardColors();
+                }
+            }
+        }
+        draw();
     }
 
 
     // highlight all available moves for selected figure
-    public void highlight(Figure fig, MoveData md) {
+    public void highlight(Figure fig) {
         resetBoardColors();
-        ArrayList<Point> av = md.getAvailableMoves();
-        ArrayList<Point> at = md.getAttackbleFields();
-        for (Point p : av)
+        ArrayList<Point> av = fig.getMd(figureField).getAvailableMoves();
+        ArrayList<Point> at = fig.getMd(figureField).getAttackbleFields();
+        for (Point p : av) {
             board[p.x][p.y].setBackground(getDrawable(R.drawable.gradientblue));
-        for (Point p : at)
+            fields[p.x][p.y].setVisibility(View.VISIBLE);
+        }
+        for (Point p : at) {
             board[p.x][p.y].setBackground(getDrawable(R.drawable.gradientred));
+            fields[p.x][p.y].setVisibility(View.VISIBLE);
+        }
         board[fig.getX()][fig.getY()].setBackground(getDrawable(R.drawable.gradientwhite));
     }
 
+
+    private Figure getClickedField(int idN) {
+        String id = getResources().getResourceEntryName(idN);
+        id = id.substring(id.length() - 2);
+        Integer fieldnumber = Integer.parseInt(id);
+        return figureField[fieldnumber % 10 - 1][fieldnumber / 10 - 1];
+    }
 
 
 }

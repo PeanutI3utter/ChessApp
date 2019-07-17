@@ -17,9 +17,9 @@ public class Bishop extends Figure{
     }
 
     @Override
-    public MoveData availableMoves(Figure[][] field) {
+    public void availableMoves(Figure[][] field) {
         MoveData md = new MoveData();
         diagonalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
-        return md;
+        setMd(md);
     }
 }

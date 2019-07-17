@@ -18,17 +18,17 @@ public class Knight extends Figure{
     }
 
     @Override
-    public MoveData availableMoves(Figure[][] field) {
+    public void availableMoves(Figure[][] field) {
         MoveData md = new MoveData();
         ArrayList<Point> av = md.getAvailableMoves();
         ArrayList<Point> at = md.getAttackbleFields();
         for (int[] move : moves) {
-            int ex = x + move[0];
-            int why = y + move[1];
+            int ex = pos.x + move[0];
+            int why = pos.y + move[1];
             if (ex < 8 & ex >= 0 & why < 8 & why >= 0) {
                 Figure fig = field[ex][why];
                 if (!(fig instanceof PlaceHolder)) {
-                    if (fig.owner != owner) {
+                    if (fig.getOwner() != getOwner()) {
                         at.add(new Point(ex, why));
                     }
                     break;
@@ -36,6 +36,6 @@ public class Knight extends Figure{
                 av.add(new Point(ex, why));
             }
         }
-        return md;
+        setMd(md);
     }
 }

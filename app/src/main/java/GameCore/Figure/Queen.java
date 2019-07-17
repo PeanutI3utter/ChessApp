@@ -21,11 +21,11 @@ public class Queen extends Figure {
     }
 
     @Override
-    public MoveData availableMoves(Figure[][] field) {
+    public void availableMoves(Figure[][] field) {
         MoveData data = new MoveData();
         horizontalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 8, RIGHT, LEFT);
         verticalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 8, UP, DOWN);
         diagonalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 9, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
-        return data;
+        setMd(data);
     }
 }

@@ -17,10 +17,10 @@ public class Rook extends Figure {
     }
 
     @Override
-    public MoveData availableMoves(Figure[][] field) {
+    public void availableMoves(Figure[][] field) {
         MoveData md = new MoveData();
         horizontalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, LEFT, RIGHT);
         verticalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, UP, DOWN);
-        return md;
+        setMd(md);
     }
 }

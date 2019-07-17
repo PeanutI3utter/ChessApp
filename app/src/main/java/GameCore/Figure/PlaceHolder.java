@@ -1,7 +1,6 @@
 package GameCore.Figure;
 
 
-import GameCore.MoveData;
 import GameCore.Player;
 
 public class PlaceHolder extends Figure {
@@ -10,7 +9,7 @@ public class PlaceHolder extends Figure {
     }
 
     @Override
-    public MoveData availableMoves(Figure[][] field) {
-        return null;
+    public void availableMoves(Figure[][] field) {
+
     }
 }

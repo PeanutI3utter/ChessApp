@@ -18,14 +18,16 @@ public class Pawn extends Figure {
     }
 
     @Override
-    public MoveData availableMoves(Figure[][] field) {
+    public void availableMoves(Figure[][] field) {
         MoveData md = new MoveData();
-        Direction d = owner.player1() ? Direction.UP : Direction.DOWN;
+        Direction d = getOwner().player1() ? Direction.UP : Direction.DOWN;
         availableFields(field, md.getAvailableMoves(), md.getAttackbleFields(), d);
-        return md;
+        setMd(md);
     }
 
     public void availableFields(Figure[][] field, ArrayList<Point> available, ArrayList<Point> attackable, Direction d) {
+        int x = getX();
+        int y = getY();
         int why = y + d.getY();
         if (why < 8 & why >= 0) {
             if (field[x][why] instanceof PlaceHolder)
@@ -33,13 +35,13 @@ public class Pawn extends Figure {
             if (x + 1 < 8) {
                 Figure fig = field[x + 1][why];
                 if (!(fig instanceof PlaceHolder))
-                    if (fig.owner != owner)
+                    if (fig.getOwner() != getOwner())
                         attackable.add(new Point(x + 1, why));
             }
             if (x - 1 >= 0) {
                 Figure fig = field[x - 1][why];
                 if (!(fig instanceof PlaceHolder))
-                    if (fig.owner != owner)
+                    if (fig.getOwner() != getOwner())
                         attackable.add(new Point(x - 1, why));
             }
         }
