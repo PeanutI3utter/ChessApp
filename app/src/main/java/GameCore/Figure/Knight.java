@@ -1,14 +1,16 @@
 package GameCore.Figure;
 
-import android.util.Pair;
+import android.graphics.Point;
 
 import com.example.chess.R;
 
 import java.util.ArrayList;
 
+import GameCore.MoveData;
 import GameCore.Player;
 
 public class Knight extends Figure{
+    private int[][] moves = {{1, -2}, {-1, -2}, {1, 2}, {-1, 2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1}};
     public Knight(Player owner, int x, int y) {
         super(owner, x, y);
         image = owner.player1() ? R.drawable.horsewhite : R.drawable.horseblack;
@@ -16,18 +18,24 @@ public class Knight extends Figure{
     }
 
     @Override
-    public ArrayList<Pair<Integer, Integer>> availableMoves(Figure[][] field) {
-
-        ArrayList<Pair<Integer, Integer>> moves = new ArrayList<>();
-        moves.add(new Pair(x + 1, y - 2));
-        moves.add(new Pair(x - 1, y - 2));
-        moves.add(new Pair(x + 1, y + 2));
-        moves.add(new Pair(x - 1, y + 2));
-        moves.add(new Pair(x + 2, y + 1));
-        moves.add(new Pair(x + 2, y - 1));
-        moves.add(new Pair(x - 2, y + 1));
-        moves.add(new Pair(x - 2, y - 1));
-
-        return valid(moves);
+    public MoveData availableMoves(Figure[][] field) {
+        MoveData md = new MoveData();
+        ArrayList<Point> av = md.getAvailableMoves();
+        ArrayList<Point> at = md.getAttackbleFields();
+        for (int[] move : moves) {
+            int ex = x + move[0];
+            int why = y + move[1];
+            if (ex < 8 & ex >= 0 & why < 8 & why >= 0) {
+                Figure fig = field[ex][why];
+                if (!(fig instanceof PlaceHolder)) {
+                    if (fig.owner != owner) {
+                        at.add(new Point(ex, why));
+                    }
+                    break;
+                }
+                av.add(new Point(ex, why));
+            }
+        }
+        return md;
     }
 }

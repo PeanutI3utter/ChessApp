@@ -1,10 +1,7 @@
 package GameCore.Figure;
 
 
-import android.util.Pair;
-
-import java.util.ArrayList;
-
+import GameCore.MoveData;
 import GameCore.Player;
 
 public class PlaceHolder extends Figure {
@@ -13,7 +10,7 @@ public class PlaceHolder extends Figure {
     }
 
     @Override
-    public ArrayList<Pair<Integer, Integer>> availableMoves(Figure[][] field) {
+    public MoveData availableMoves(Figure[][] field) {
         return null;
     }
 }

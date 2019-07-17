@@ -1,16 +1,18 @@
 package GameCore.Figure;
 
-import android.os.Build;
-import android.util.Log;
-import android.util.Pair;
-
-import androidx.annotation.RequiresApi;
-
 import com.example.chess.R;
 
-import java.util.ArrayList;
-
+import GameCore.MoveData;
 import GameCore.Player;
+
+import static GameCore.Direction.DOWN;
+import static GameCore.Direction.DOWNLEFT;
+import static GameCore.Direction.DOWNRIGHT;
+import static GameCore.Direction.LEFT;
+import static GameCore.Direction.RIGHT;
+import static GameCore.Direction.UP;
+import static GameCore.Direction.UPLEFT;
+import static GameCore.Direction.UPRIGHT;
 
 public class King extends Figure {
 
@@ -20,17 +22,11 @@ public class King extends Figure {
     }
 
     @Override
-    public ArrayList<Pair<Integer, Integer>> availableMoves(Figure[][] field) {
-        ArrayList<Pair<Integer, Integer>> moves = new ArrayList<>();
-        moves.add(new Pair(x, y + 1));
-        moves.add(new Pair(x, y - 1));
-        moves.add(new Pair(x + 1, y));
-        moves.add(new Pair(x - 1, y));
-        moves.add(new Pair(x + 1, y - 1));
-        moves.add(new Pair(x + 1, y + 1));
-        moves.add(new Pair(x - 1, y + 1));
-        moves.add(new Pair(x - 1, y - 1));
-
-        return valid(moves);
+    public MoveData availableMoves(Figure[][] field) {
+        MoveData md = new MoveData();
+        horizontalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 1, UP, DOWN);
+        verticalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 1, RIGHT, LEFT);
+        diagonalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 1, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
+        return md;
     }
 }

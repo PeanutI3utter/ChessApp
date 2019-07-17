@@ -1,12 +1,14 @@
 package GameCore.Figure;
 
-import android.util.Pair;
-
 import com.example.chess.R;
 
-import java.util.ArrayList;
-
+import GameCore.MoveData;
 import GameCore.Player;
+
+import static GameCore.Direction.DOWNLEFT;
+import static GameCore.Direction.DOWNRIGHT;
+import static GameCore.Direction.UPLEFT;
+import static GameCore.Direction.UPRIGHT;
 
 public class Bishop extends Figure{
     public Bishop(Player owner, int x, int y) {
@@ -15,14 +17,9 @@ public class Bishop extends Figure{
     }
 
     @Override
-    public ArrayList<Pair<Integer, Integer>> availableMoves(Figure[][] field) {
-        ArrayList<Pair<Integer, Integer>> moves = new ArrayList<>();
-        for (int i = 1; i < 8; i++) {
-            moves.add(new Pair(x + i, y + i));
-            moves.add(new Pair(x - i, y -i ));
-            moves.add(new Pair(x + i, y - i));
-            moves.add(new Pair(x - i, y + i));
-        }
-        return valid(moves);
+    public MoveData availableMoves(Figure[][] field) {
+        MoveData md = new MoveData();
+        diagonalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
+        return md;
     }
 }

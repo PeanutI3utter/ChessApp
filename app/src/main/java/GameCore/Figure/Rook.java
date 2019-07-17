@@ -1,12 +1,14 @@
 package GameCore.Figure;
 
-import android.util.Pair;
-
 import com.example.chess.R;
 
-import java.util.ArrayList;
-
+import GameCore.MoveData;
 import GameCore.Player;
+
+import static GameCore.Direction.DOWN;
+import static GameCore.Direction.LEFT;
+import static GameCore.Direction.RIGHT;
+import static GameCore.Direction.UP;
 
 public class Rook extends Figure {
     public Rook(Player owner, int x, int y) {
@@ -15,16 +17,10 @@ public class Rook extends Figure {
     }
 
     @Override
-    public ArrayList<Pair<Integer, Integer>> availableMoves(Figure[][] field) {
-        ArrayList<Pair<Integer, Integer>> moves = new ArrayList<>();
-
-        for (int i = 1; i < 8; i++) {
-            moves.add(new Pair(x, y + i));
-            moves.add(new Pair(x + i, y));
-            moves.add(new Pair(x, y - i));
-            moves.add(new Pair(x - i, y));
-        }
-
-        return valid(moves);
+    public MoveData availableMoves(Figure[][] field) {
+        MoveData md = new MoveData();
+        horizontalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, LEFT, RIGHT);
+        verticalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, UP, DOWN);
+        return md;
     }
 }
