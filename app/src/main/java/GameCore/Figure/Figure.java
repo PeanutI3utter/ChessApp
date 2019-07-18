@@ -2,6 +2,7 @@ package GameCore.Figure;
 
 import android.graphics.Point;
 import android.util.Pair;
+import android.view.View;
 
 import java.util.ArrayList;
 
