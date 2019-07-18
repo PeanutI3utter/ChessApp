@@ -31,7 +31,6 @@ public class Knight extends Figure{
                     if (fig.getOwner() != getOwner()) {
                         at.add(new Point(ex, why));
                     }
-                    break;
                 }
                 av.add(new Point(ex, why));
             }

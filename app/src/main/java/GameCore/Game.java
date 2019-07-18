@@ -1,10 +1,13 @@
 package GameCore;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,12 +23,16 @@ import GameCore.Figure.Pawn;
 import GameCore.Figure.PlaceHolder;
 import GameCore.Figure.Queen;
 import GameCore.Figure.Rook;
+import GameCore.Graphics.Board;
 
 public class Game extends AppCompatActivity implements View.OnClickListener {
 
     PlayerQueue queue;
     Player player1;
     Player player2;
+    Canvas canvas;
+    Bitmap bitmap;
+    ImageView imageView;
     ImageButton[][] fields;
     Figure[][] figureField;
     Figure selected;
@@ -33,7 +40,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     int imageWH;
     int fieldW;
     int fieldH;
-    View[][] board;
+    Board board;
     Player currentPlayer;
     View currentColor;
 
@@ -56,9 +63,13 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         currentColor = findViewById(R.id.currentcolor);
         currentColor.setBackgroundColor(Color.WHITE);
 
+
+        //init drawing components
+        initDrawingComp();
+
         //load board image
-        board = new View[8][8];
-        loadBoard();
+        initBoard();
+
 
         //get all field buttons
         fields = new ImageButton[8][8];
@@ -66,48 +77,30 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
 
         figureField = new Figure[8][8];
-        /*load basic layout
+        //load basic layout
         loadFiguresBasic();
-        */
 
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                figureField[i][j] = new PlaceHolder(null, i, j);
-            }
-        }
 
-        figureField[4][4] = new Queen(player1, 4, 4);
-        for (int i = 6; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                switch ((i + j) % 3) {
-                    case 0:
-                        figureField[j][i] = new Rook(player2, j, i);
-                        break;
-                    case 1:
-                        figureField[j][i] = new Bishop(player2, j, i);
-                        break;
-                    case 2:
-                        figureField[j][i] = new Knight(player1, j, i);
-                }
-            }
-        }
         draw();
     }
 
-    // loads the board by filling colors and such
-    public void loadBoard() {
-        for(int vertical = 0; vertical < 8; vertical++) {
-            for (int horizontal = 0; horizontal < 8; horizontal++) {
-                int id = getResources().getIdentifier("f" + ((vertical + 1) * 10 + (horizontal + 1)), "id", getPackageName());
-                board[horizontal][vertical] = findViewById(id);
-                if ((vertical + horizontal) % 2 != 0)
-                    board[horizontal][vertical].setBackgroundColor(getResources().getColor(R.color.boarddarkbrown));
-                else
-                    board[horizontal][vertical].setBackgroundColor(getResources().getColor(R.color.boardlightbrown));
-            }
-        }
+    public void initDrawingComp(){
+        imageView = findViewById(R.id.imageview);
+        bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(bitmap);
+        imageView.setImageBitmap(bitmap);
     }
 
+    public void initBoard(){
+        board = new Board(this);
+        board.setCanvas(canvas);
+        board.setDarkBrown(getColor(R.color.boarddarkbrown));
+        board.setLightBrown(getColor(R.color.boardlightbrown));
+        board.setSelected(getDrawable(R.drawable.gradientwhite));
+        board.setMoveable(getDrawable(R.drawable.gradientblue));
+        board.setAttackable(getDrawable(R.drawable.gradientred));
+        board.initBoard();
+    }
 
     // assign all buttons in fields array
     public void getAllButtons() {
@@ -179,6 +172,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                     field.setImageResource(fig.getImage());
             }
         }
+        board.drawBoard();
     }
 
     public void move(Figure fig, Point point) {
@@ -196,16 +190,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     }
 
 
-    private void resetBoardColors() {
-        for(int vertical = 0; vertical < 8; vertical++){
-            for(int horizontal = 0; horizontal < 8; horizontal++){
-                if((vertical + horizontal) % 2 != 0)
-                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boarddarkbrown));
-                else
-                    board[vertical][horizontal].setBackgroundColor(getResources().getColor(R.color.boardlightbrown));
-            }
-        }
-    }
+
 
 
 
@@ -229,10 +214,10 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                     nextMove();
                 } else {
                     selected = null;
-                    resetBoardColors();
+                    board.resetBoard();
                 }
             } else if (figure.getOwner() == currentPlayer) {
-                resetBoardColors();
+                board.resetBoard();
                 selected = figure;
                 highlight(figure);
             } else {
@@ -241,7 +226,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                     nextMove();
                 } else {
                     selected = null;
-                    resetBoardColors();
+                    board.resetBoard();
                 }
             }
         }
@@ -253,23 +238,13 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         currentPlayer = queue.next();
         selected = null;
         currentColor.setBackgroundColor(currentPlayer.getPlayerColor());
-        resetBoardColors();
+        board.resetBoard();
     }
 
     // highlight all available moves for selected figure
     public void highlight(Figure fig) {
-        resetBoardColors();
-        ArrayList<Point> av = fig.getMd(figureField).getAvailableMoves();
-        ArrayList<Point> at = fig.getMd(figureField).getAttackbleFields();
-        for (Point p : av) {
-            board[p.x][p.y].setBackground(getDrawable(R.drawable.gradientblue));
-            fields[p.x][p.y].setVisibility(View.VISIBLE);
-        }
-        for (Point p : at) {
-            board[p.x][p.y].setBackground(getDrawable(R.drawable.gradientred));
-            fields[p.x][p.y].setVisibility(View.VISIBLE);
-        }
-        board[fig.getX()][fig.getY()].setBackground(getDrawable(R.drawable.gradientwhite));
+        board.highlight(fig, figureField);
+        draw();
     }
 
 

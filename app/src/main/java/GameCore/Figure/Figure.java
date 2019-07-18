@@ -13,7 +13,7 @@ import GameCore.Player;
 public abstract class Figure {
     protected Point pos;
     int image;
-    boolean moveable;
+    private boolean moveable;
     private Player owner;
     private MoveData md;
 
