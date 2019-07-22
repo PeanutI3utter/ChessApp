@@ -13,17 +13,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chess.R;
 
-import java.util.ArrayList;
-
 import GameCore.Figure.Bishop;
 import GameCore.Figure.Figure;
 import GameCore.Figure.King;
 import GameCore.Figure.Knight;
 import GameCore.Figure.Pawn;
-import GameCore.Figure.PlaceHolder;
 import GameCore.Figure.Queen;
 import GameCore.Figure.Rook;
 import GameCore.Graphics.Board;
+import GameCore.Movement.SpecialMove;
 
 public class Game extends AppCompatActivity implements View.OnClickListener {
 
@@ -34,10 +32,13 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     Bitmap bitmap;
     ImageView imageView;
     ImageButton[][] fields;
-    Figure[][] figureField;
+    Field figureField;
     Figure selected;
+    boolean highlightEnemy = true;
+    boolean enemySelected;
     int buttonWH;
     int imageWH;
+    int currentTurn;
     int fieldW;
     int fieldH;
     Board board;
@@ -56,9 +57,10 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         }
         fieldW = 8;
         fieldH = 8;
+        currentTurn = 0;
         player1 = new Human(true);
         player2 = new Human(false);
-        queue = new PlayerQueue(player1, player2);
+        queue = new PlayerQueue(player2, player1);
         currentPlayer = queue.next();
         currentColor = findViewById(R.id.currentcolor);
         currentColor.setBackgroundColor(Color.WHITE);
@@ -76,14 +78,16 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         getAllButtons();
 
 
-        figureField = new Figure[8][8];
         //load basic layout
         loadFiguresBasic();
 
-
+        nextTurn();
         draw();
     }
 
+    /**
+     * initiates canvas and bitmap object
+     */
     public void initDrawingComp(){
         imageView = findViewById(R.id.imageview);
         bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
@@ -91,6 +95,9 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         imageView.setImageBitmap(bitmap);
     }
 
+    /**
+     * initiates board object
+     */
     public void initBoard(){
         board = new Board(this);
         board.setCanvas(canvas);
@@ -99,10 +106,14 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         board.setSelected(getDrawable(R.drawable.gradientwhite));
         board.setMoveable(getDrawable(R.drawable.gradientblue));
         board.setAttackable(getDrawable(R.drawable.gradientred));
+        board.setSpecial(getDrawable(R.drawable.gradientgreen));
         board.initBoard();
+        figureField = new Field();
     }
 
-    // assign all buttons in fields array
+    /**
+     * assign all buttons in fields array
+     */
     public void getAllButtons() {
         for(int vertical = 0; vertical < 8; vertical++){
             for(int horizontal = 0; horizontal < 8; horizontal++){
@@ -115,7 +126,13 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     }
 
 
-    //loads the basic chess figure layout
+    public PlayerQueue getQueue() {
+        return queue;
+    }
+
+    /**
+     * loads the basic chess figure layout
+     */
     public void loadFiguresBasic() {
         Player player;
         for(int x = 0; x < 8; x++) {
@@ -127,46 +144,51 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 else
                     player = null;
 
-                if (y == 0 | y == 7)
+                if (y == 0 | y == 7) {
                     switch (x) {
                         case 0:
                         case 7:
-                            figureField[x][y] = new Rook(player, x, y);
+                            figureField.setField(new Rook(player, x, y, this), x, y);
                             break;
                         case 1:
                         case 6:
-                            figureField[x][y] = new Knight(player, x, y);
+                            figureField.setField(new Knight(player, x, y, this), x, y);
                             break;
                         case 2:
                         case 5:
-                            figureField[x][y] = new Bishop(player, x, y);
+                            figureField.setField(new Bishop(player, x, y, this), x, y);
                             break;
                         case 4:
-                            figureField[x][y] = new King(player, x, y);
-
+                            figureField.setField(new King(player, x, y, this), x, y);
+                            player.setKing((King) figureField.getFigure(x, y));
                             break;
                         case 3:
-                            figureField[x][y] = new Queen(player, x, y);
+                            figureField.setField(new Queen(player, x, y, this), x, y);
                             break;
                         default:
-                            figureField[x][y] = new PlaceHolder(null, x, y);
+                            figureField.setField(null, x, y);
                     }
-                else if (y == 1 | y == 6)
-                    figureField[x][y] = new Pawn(player, x, y);
+                    player.addFigure(figureField.getFigure(x, y));
+                } else if (y == 1 | y == 6) {
+                    figureField.setField(new Pawn(player, x, y, this), x, y);
+                    player.addFigure(figureField.getFigure(x, y));
+                }
                 else
-                    figureField[x][y] = new PlaceHolder(player, x, y);
+                    figureField.setField(null, x, y);
             }
         }
     }
 
 
-    //draw the figures
+    /**
+     * draws the board and figures
+     */
     public void draw(){
         for (int h = 0; h < 8; h++) {
             for (int v = 0; v < 8; v++) {
-                Figure fig = figureField[h][v];
+                Figure fig = figureField.getFigure(h, v);
                 ImageButton field = fields[h][v];
-                if(fig instanceof PlaceHolder)
+                if (fig == null)
                     field.setImageResource(android.R.color.transparent);
                 else
                     field.setImageResource(fig.getImage());
@@ -175,10 +197,19 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         board.drawBoard();
     }
 
+    /**
+     * @param fig
+     * @param point
+     */
+
     public void move(Figure fig, Point point) {
-        figureField[fig.getX()][fig.getY()] = new PlaceHolder(null, fig.getX(), fig.getY());
-        figureField[point.x][point.y] = fig;
+        Figure dest = figureField.getFigure(point.x, point.y);
+        if (dest != null)
+            dest.delete(figureField);
+        figureField.setField(null, fig.getX(), fig.getY());
+        figureField.setField(fig, point.x, point.y);
         fig.setPos(point);
+        fig.setMoved(true);
     }
 
 
@@ -191,68 +222,106 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
 
 
-
-
-
     @Override
-    //OnClickListener for figures
+    /**
+     * evaluates current state and evalutaes next step
+     */
     public void onClick(View view) {
-        Figure figure = getClickedField(view.getId());
+        Point clickedPoint = getClickedField(view.getId());
+        Figure figure = figureField.getFigure(clickedPoint);
         if (selected == null) {
-            if (figure instanceof PlaceHolder)
-                return;
-            if (figure.getOwner() == currentPlayer) {
-                selected = figure;
-                selected.availableMoves(figureField);
-                highlight(figure);
-            }
+            select(figure);
         } else {
-            selected.availableMoves(figureField);
-            if (figure instanceof PlaceHolder) {
-                if (selected.getMd(figureField).getAvailableMoves().contains(figure.getPos())) {
-                    move(selected, figure.getPos());
-                    nextMove();
-                } else {
-                    selected = null;
-                    board.resetBoard();
-                }
-            } else if (figure.getOwner() == currentPlayer) {
-                board.resetBoard();
-                selected = figure;
-                highlight(figure);
-            } else {
-                if (selected.getMd(figureField).getAttackbleFields().contains(figure.getPos())) {
-                    move(selected, figure.getPos());
-                    nextMove();
-                } else {
-                    selected = null;
-                    board.resetBoard();
-                }
-            }
+            afterSelection(figure, clickedPoint);
         }
         draw();
     }
 
+    /**
+     * selects the figure if figure is of current player
+     */
+    public void select(Figure fig) {
+        if (fig == null)
+            return;
+        if (fig.getOwner() == currentPlayer)
+            highlight(fig);
+    }
 
-    public void nextMove() {
+
+    public void afterSelection(Figure figure, Point clickedPoint) {
+        if (figure == null) {
+            if (selected.getMd().getAvailableMoves().contains(clickedPoint)) {
+                move(selected, clickedPoint);
+                nextTurn();
+            } else {
+                SpecialMove specialMove = selected.getMd().getSpecialMove(clickedPoint);
+                if (specialMove != null) {
+                    specialMove.move(figureField);
+                    nextTurn();
+                } else
+                    resetSelected();
+            }
+        } else if (figure == selected) {
+            resetSelected();
+        } else if (figure.getOwner() == currentPlayer) {
+            board.hardResetBoard();
+            highlight(figure);
+        } else {
+            if (selected.getMd().getAttackbleFields().contains(figure.getPos())) {
+                move(selected, figure.getPos());
+                nextTurn();
+            } else {
+                resetSelected();
+            }
+        }
+    }
+
+
+    /**
+     * moves the game to next turn
+     */
+    public void nextTurn() {
+        Player oldplayer = currentPlayer;
         currentPlayer = queue.next();
+        currentPlayer.reset();
+        oldplayer.update(figureField);
+        board.hardResetBoard();
         selected = null;
-        currentColor.setBackgroundColor(currentPlayer.getPlayerColor());
-        board.resetBoard();
+        currentColor.setBackground(getDrawable(currentPlayer.getPlayerColor()));
+        currentPlayer.update(figureField);
+        if (currentPlayer.isThreatened())
+            board.highlightAttack(currentPlayer.getKing());
+        currentTurn++;
     }
 
     // highlight all available moves for selected figure
     public void highlight(Figure fig) {
-        board.highlight(fig, figureField);
-        draw();
+        selected = fig;
+        board.highlight(fig);
     }
 
+    /**
+     * resets highlight to non selected state
+     */
+    public void resetSelected() {
+        selected = null;
+        enemySelected = false;
+        if (currentPlayer.isThreatened())
+            board.highlightAttack(currentPlayer.getKing());
+        board.resetBoard();
+    }
 
-    private Figure getClickedField(int idN) {
+    /**
+     * calculates clicked position via id
+     *
+     * @param idN id of clicked element(button)
+     * @return parsed position via id
+     */
+    private Point getClickedField(int idN) {
         String id = getResources().getResourceEntryName(idN);
-        id = id.substring(id.length() - 2);
-        Integer fieldnumber = Integer.parseInt(id);
-        return figureField[fieldnumber % 10 - 1][fieldnumber / 10 - 1];
+        Integer lineNum = Integer.parseInt(id.substring(id.length() - 2, id.length() - 1)) - 1;
+        Integer rowNum = Integer.parseInt(id.substring(id.length() - 1)) - 1;
+        return new Point(rowNum, lineNum);
     }
 
 

@@ -1,40 +1,42 @@
 package GameCore.Figure;
 
-import android.graphics.Point;
-
 import com.example.chess.R;
 
-import java.util.ArrayList;
-
+import GameCore.Field;
+import GameCore.Game;
 import GameCore.MoveData;
+import GameCore.Movement.Jump;
 import GameCore.Player;
 
+import static GameCore.Movement.Jump.DDL;
+import static GameCore.Movement.Jump.DDR;
+import static GameCore.Movement.Jump.DLL;
+import static GameCore.Movement.Jump.DRR;
+import static GameCore.Movement.Jump.ULL;
+import static GameCore.Movement.Jump.URR;
+import static GameCore.Movement.Jump.UUL;
+import static GameCore.Movement.Jump.UUR;
+
 public class Knight extends Figure{
-    private int[][] moves = {{1, -2}, {-1, -2}, {1, 2}, {-1, 2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1}};
-    public Knight(Player owner, int x, int y) {
-        super(owner, x, y);
+    private Jump[] moves = {UUL, UUR, ULL, URR, DLL, DRR, DDL, DDR};
+
+    public Knight(Player owner, int x, int y, Game game) {
+        super(owner, x, y, game);
         image = owner.player1() ? R.drawable.horsewhite : R.drawable.horseblack;
 
     }
 
     @Override
-    public void availableMoves(Figure[][] field) {
-        MoveData md = new MoveData();
-        ArrayList<Point> av = md.getAvailableMoves();
-        ArrayList<Point> at = md.getAttackbleFields();
-        for (int[] move : moves) {
-            int ex = pos.x + move[0];
-            int why = pos.y + move[1];
-            if (ex < 8 & ex >= 0 & why < 8 & why >= 0) {
-                Figure fig = field[ex][why];
-                if (!(fig instanceof PlaceHolder)) {
-                    if (fig.getOwner() != getOwner()) {
-                        at.add(new Point(ex, why));
-                    }
-                }
-                av.add(new Point(ex, why));
-            }
+    public void updateMoveData(Field field) {
+        MoveData md = getMd();
+        md.reset();
+        jumpMoves(field, moves);
+        if (isRestricted()) {
+            md.intersection(getRestrictions());
         }
-        setMd(md);
+        if (getOwner().isThreatened()) {
+            md.intersection(getOwner().getKing().getRestrictions());
+        }
     }
+
 }

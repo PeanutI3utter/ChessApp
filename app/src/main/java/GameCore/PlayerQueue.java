@@ -15,4 +15,8 @@ public class PlayerQueue {
         nextAfter = ret;
         return ret;
     }
+
+    public Player getOtherPlayer(Player player) {
+        return player == next ? nextAfter : next;
+    }
 }

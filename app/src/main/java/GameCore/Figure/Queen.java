@@ -2,30 +2,40 @@ package GameCore.Figure;
 
 import com.example.chess.R;
 
+import GameCore.Field;
+import GameCore.Game;
 import GameCore.MoveData;
+import GameCore.Movement.Direction;
 import GameCore.Player;
 
-import static GameCore.Direction.DOWN;
-import static GameCore.Direction.DOWNLEFT;
-import static GameCore.Direction.DOWNRIGHT;
-import static GameCore.Direction.LEFT;
-import static GameCore.Direction.RIGHT;
-import static GameCore.Direction.UP;
-import static GameCore.Direction.UPLEFT;
-import static GameCore.Direction.UPRIGHT;
+import static GameCore.Movement.Direction.DOWN;
+import static GameCore.Movement.Direction.DOWNLEFT;
+import static GameCore.Movement.Direction.DOWNRIGHT;
+import static GameCore.Movement.Direction.LEFT;
+import static GameCore.Movement.Direction.RIGHT;
+import static GameCore.Movement.Direction.UP;
+import static GameCore.Movement.Direction.UPLEFT;
+import static GameCore.Movement.Direction.UPRIGHT;
 
 public class Queen extends Figure {
-    public Queen(Player owner, int x, int y) {
-        super(owner, x, y);
+    Direction[] directions = {UP, LEFT, RIGHT, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT};
+
+    public Queen(Player owner, int x, int y, Game game) {
+        super(owner, x, y, game);
         image = owner.player1() ? R.drawable.queenwhite : R.drawable.queenblack;
     }
 
     @Override
-    public void availableMoves(Figure[][] field) {
-        MoveData data = new MoveData();
-        horizontalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 8, RIGHT, LEFT);
-        verticalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 8, UP, DOWN);
-        diagonalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 9, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
-        setMd(data);
+    public void updateMoveData(Field field) {
+        MoveData data = getMd();
+        data.reset();
+        lineMoves(field, 8, directions);
+        if (isRestricted()) {
+            data.intersection(getRestrictions());
+        }
+        if (getOwner().isThreatened()) {
+            data.intersection(getOwner().getKing().getRestrictions());
+        }
     }
+
 }

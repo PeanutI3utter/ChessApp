@@ -896,7 +896,9 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
             app:layout_constraintLeft_toLeftOf="parent"
+            android:background="@drawable/whitecircle"
             app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
