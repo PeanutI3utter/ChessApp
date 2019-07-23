@@ -18,12 +18,19 @@ public class GhostPawn extends Figure {
         return;
     }
 
-    @Override
+    /**
+     * deletes itself from field and resets
+     *
+     * @param field
+     */
     public void delete(Field field) {
-        master.delete(field);
+        super.delete(field);
+        master.deleteClone();
     }
 
-    public void delete(int i, Field field) {
-        field.setField(null, this.getX(), this.getY());
+    @Override
+    public void onAttack(Field field) {
+        master.delete(field);
+        delete(field);
     }
 }

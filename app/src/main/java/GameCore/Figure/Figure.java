@@ -10,6 +10,7 @@ import GameCore.MoveData;
 import GameCore.Movement.Direction;
 import GameCore.Movement.Jump;
 import GameCore.Movement.Movement;
+import GameCore.Movement.SpecialMove;
 import GameCore.Player;
 
 import static GameCore.Movement.Direction.DOWN;
@@ -171,11 +172,37 @@ public abstract class Figure {
         field.setField(null, this.getX(), this.getY());
     }
 
+    /**
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return
+     */
+    public static boolean isInVicinity(int x1, int y1, int x2, int y2) {
+        return Math.abs((double) x1 - x2) <= 1 & Math.abs((double) y1 - y2) <= 1;
+    }
+
     public void move(Field field, int x, int y) {
         field.setField(null, this.getX(), this.getY());
         field.setField(this, x, y);
         setX(x);
         setY(y);
+        setMoved(true);
+    }
+
+    public void move(Field field, Point position) {
+        field.setField(null, this.getX(), this.getY());
+        field.setField(this, position.x, position.y);
+        setX(position.x);
+        setY(position.y);
+        setMoved(true);
+    }
+
+    public void attack(Field field, Figure attackedFigure, Point position) {
+        attackedFigure.onAttack(field);
+        move(field, position);
+        setMoved(true);
     }
 
 
@@ -348,46 +375,8 @@ public abstract class Figure {
         }
     }
 
-    /**
-     * gets all the fields a
-     *
-     * @param field
-     * @param jumps
-     */
-    public void jumpMoves(Field field, Jump... jumps) {
-        ArrayList<Point> av = md.getAvailableMoves();
-        ArrayList<Point> at = md.getAttackbleFields();
-        Player enemy = game.getQueue().getOtherPlayer(getOwner());
-        King enemyKing = enemy.getKing();
-        int kingX = enemyKing.getX();
-        int kingY = enemyKing.getY();
-        for (Jump jump : jumps) {
-            int x = pos.x + jump.getX();
-            int y = pos.y + jump.getY();
-            if (x > 7 | x < 0 | y < 0 | y > 7)
-                continue;
-            Point point = new Point(x, y);
-            Figure checkingFig = field.getFigure(point);
-            if (checkingFig == null) {
-                if (isInVicinity(x, y, kingX, kingY)) {
-                    enemyKing.addBlackList(point);
-                }
-                av.add(point);
-                continue;
-            }
-            if (checkingFig.getOwner() != getOwner()) {
-                if (checkingFig instanceof King) {
-                    enemy.setThreatened(true);
-                    enemyKing.setRestrictions(point);
-                    enemyKing.addThreatendBy(this);
-                }
-                at.add(point);
-            } else {
-                if (isInVicinity(x, y, kingX, kingY)) {
-                    enemyKing.addBlackList(point);
-                }
-            }
-        }
+    public void onAttack(Field field) {
+        delete(field);
     }
 
     public void lineMoves(Field field, int range, Direction... directions) {
@@ -481,7 +470,101 @@ public abstract class Figure {
         setRestrictions(null);
     }
 
-    public boolean isInVicinity(int x1, int y1, int x2, int y2) {
-        return Math.abs((double) x1 - x2) <= 1 & Math.abs((double) y1 -y2) <= 1;
+    /**
+     * gets all the fields a
+     *
+     * @param field
+     * @param jumps
+     */
+    public void jumpMoves(Field field, Jump... jumps) {
+        ArrayList<Point> av = md.getAvailableMoves();
+        ArrayList<Point> at = md.getAttackbleFields();
+        Player enemy = game.getQueue().getOtherPlayer(getOwner());
+        King enemyKing = enemy.getKing();
+        int kingX = enemyKing.getX();
+        int kingY = enemyKing.getY();
+        for (Jump jump : jumps) {
+            int x = pos.x + jump.getX();
+            int y = pos.y + jump.getY();
+            if (x > 7 | x < 0 | y < 0 | y > 7)
+                continue;
+            Point point = new Point(x, y);
+            Figure checkingFig = field.getFigure(point);
+            if (checkingFig == null) {
+                if (isInVicinity(x, y, kingX, kingY)) {
+                    enemyKing.addBlackList(point);
+                }
+                av.add(point);
+                continue;
+            }
+            if (checkingFig.getOwner() != getOwner()) {
+                if (checkingFig instanceof King) {
+                    enemy.setThreatened(true);
+                    enemyKing.setRestrictions(point);
+                    enemyKing.addThreatendBy(this);
+                }
+                at.add(point);
+            } else {
+                if (checkingFig instanceof GhostPawn) {
+                    if (isInVicinity(x, y, kingX, kingY)) {
+                        enemyKing.addBlackList(point);
+                    }
+                    av.add(point);
+                }
+            }
+        }
+    }
+
+    public boolean isInVicinity(int x, int y) {
+        return Math.abs((double) pos.x - x) <= 1 & Math.abs((double) pos.y - y) <= 1;
+    }
+
+    /**
+     * method for onClickEvent, handles onClickEvent for selected(this) figure
+     *
+     * @param field
+     * @param figure       clicked Figure
+     * @param clickedPoint clicked point
+     * @return 0 if a move or attack was successful/ 1 if clicked figure cannot be selected/ 2 if click was a reselection
+     */
+    public byte doSomething(Field field, Figure figure, Point clickedPoint) {
+        if (figure == null) {
+            if (this.getMd().getAvailableMoves().contains(clickedPoint)) {
+                move(field, clickedPoint.x, clickedPoint.y);
+                return 0;
+            } else {
+                SpecialMove specialMove = this.getMd().getSpecialMove(clickedPoint);
+                if (specialMove != null) {
+                    if (!specialMove.isAnAttack()) {
+                        specialMove.move(field);
+                        return 0;
+                    }
+                }
+            }
+            return 1;
+        } else if (figure == this) {
+            return 1;
+        } else if (figure.getOwner() == getOwner()) {
+            if (figure instanceof GhostPawn) {
+                figure.delete(field);
+                move(field, clickedPoint);
+                return 0;
+            }
+            return 2;
+        } else {
+            if (this.getMd().getAttackbleFields().contains(figure.getPos())) {
+                attack(field, figure, clickedPoint);
+                return 0;
+            } else {
+                SpecialMove specialMove = this.getMd().getSpecialMove(clickedPoint);
+                if (specialMove != null) {
+                    if (specialMove.isAnAttack()) {
+                        specialMove.move(field);
+                        return 0;
+                    }
+                }
+            }
+        }
+        return 1;
     }
 }

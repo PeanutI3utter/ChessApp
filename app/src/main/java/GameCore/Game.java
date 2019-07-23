@@ -232,7 +232,16 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         if (selected == null) {
             select(figure);
         } else {
-            afterSelection(figure, clickedPoint);
+            switch (selected.doSomething(figureField, figure, clickedPoint)) {
+                case 0:
+                    nextTurn();
+                    break;
+                case 1:
+                    resetSelected();
+                    break;
+                case 2:
+                    select(figure);
+            }
         }
         draw();
     }
@@ -281,12 +290,12 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
      * moves the game to next turn
      */
     public void nextTurn() {
+        resetSelected();
         Player oldplayer = currentPlayer;
         currentPlayer = queue.next();
         currentPlayer.reset();
         oldplayer.update(figureField);
         board.hardResetBoard();
-        selected = null;
         currentColor.setBackground(getDrawable(currentPlayer.getPlayerColor()));
         currentPlayer.update(figureField);
         if (currentPlayer.isThreatened())
