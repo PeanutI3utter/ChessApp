@@ -43,9 +43,9 @@ public class Pawn extends Figure {
                         int yDir = selectedFig.getDirection().getY();
                         GhostPawn ghostPawn = new GhostPawn(selectedFig.getOwner(), xPawn, yPawn + yDir, selectedFig, selectedFig.getGame());
                         field.setField(ghostPawn, ghostPawn.getX(), ghostPawn.getY());
-                        selectedFig.setClone(ghostPawn);
                         mainFigure.moveViaOffset(field, 2, selectedFig.getDirection());
                         mainFigure.setMoved(true);
+                        selectedFig.setClone(ghostPawn);
                     }
                 };
                 specialMove.setFiguresInvolved(figure);
@@ -71,7 +71,7 @@ public class Pawn extends Figure {
     @Override
     public void move(Field field, int x, int y) {
         if (clone != null)
-            deleteClone();
+            clone.delete(field);
         super.move(field, x, y);
     }
 
@@ -84,7 +84,7 @@ public class Pawn extends Figure {
     @Override
     public void move(Field field, Point position) {
         if (clone != null)
-            deleteClone();
+            clone.delete(field);
         super.move(field, position);
     }
 
@@ -98,7 +98,7 @@ public class Pawn extends Figure {
     @Override
     public void moveViaOffset(Field field, int amount, Direction direction) {
         if (clone != null)
-            deleteClone();
+            clone.delete(field);
         super.moveViaOffset(field, amount, direction);
     }
 
@@ -112,8 +112,15 @@ public class Pawn extends Figure {
     @Override
     public void attack(Field field, Figure attackedFigure, Point position) {
         if (clone != null)
-            deleteClone();
+            clone.delete(field);
         super.attack(field, attackedFigure, position);
+    }
+
+    @Override
+    public void onAttack(Field field) {
+        if (clone != null)
+            clone.delete(field);
+        super.delete(field);
     }
 
     public GhostPawn getClone() {
@@ -181,7 +188,7 @@ public class Pawn extends Figure {
                 Point point = new Point(x + 1, why);
                 Figure fig = field.getFigure(x + 1, why);
                 if (!(fig == null))
-                    if (fig.getOwner() != getOwner())
+                    if (fig.getOwner() != getOwner() & !(fig instanceof GhostPawn))
                         attackable.add(point);
                 if (enemyKing.isInVicinity(x + 1, why)) {
                     enemyKing.addBlackList(point);
@@ -192,7 +199,7 @@ public class Pawn extends Figure {
                 Point point = new Point(x - 1, why);
                 Figure fig = field.getFigure(x - 1, why);
                 if (!(fig == null))
-                    if (fig.getOwner() != getOwner())
+                    if (fig.getOwner() != getOwner() & !(fig instanceof GhostPawn))
                         attackable.add(new Point(x - 1, why));
                 if (enemyKing.isInVicinity(x + 1, why)) {
                     enemyKing.addBlackList(point);
@@ -200,6 +207,7 @@ public class Pawn extends Figure {
             }
         }
     }
+
 
     /**
      * special delete method for pawn

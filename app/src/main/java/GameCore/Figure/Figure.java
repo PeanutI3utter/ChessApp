@@ -202,7 +202,6 @@ public abstract class Figure {
     public void attack(Field field, Figure attackedFigure, Point position) {
         attackedFigure.onAttack(field);
         move(field, position);
-        setMoved(true);
     }
 
 
@@ -402,18 +401,25 @@ public abstract class Figure {
                 Figure fig = field.getFigure(ex, why);
                 Point point = new Point(ex, why);
                 if (fig == null) {
-                    if (isThreatened) {
-                        enemyKing.addBlackList(point);
-                    } else {
-                        av.add(point);
-                        if (isInVicinity(ex, why, kingX, kingY) & numOfEnemiesInPath < 1)
-                            enemyKing.addBlackList(point);
+                    if (numOfEnemiesInPath > 0) {
+                        i++;
+                        continue;
                     }
+                    av.add(point);
+                    if (isInVicinity(ex, why, kingX, kingY) & numOfEnemiesInPath < 1)
+                        enemyKing.addBlackList(point);
                 } else if (fig instanceof GhostPawn) {
-                    if (getOwner() == fig.getOwner())
+                    if (getOwner() == fig.getOwner()) {
                         av.add(point);
-                    else
-                        at.add(point);
+                        if (enemyKing.isInVicinity(point.x, point.y))
+                            enemyKing.addBlackList(point);
+                    } else {
+                        if (numOfEnemiesInPath < 1) {
+                            at.add(point);
+                            if (enemyKing.isInVicinity(point.x, point.y))
+                                enemyKing.addBlackList(point);
+                        }
+                    }
                 } else if (fig.getOwner() == getOwner()) {
                     break;
                 } else if (fig instanceof King) {
