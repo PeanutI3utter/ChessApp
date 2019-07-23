@@ -17,42 +17,43 @@ import GameCore.Player;
 public class Pawn extends Figure {
     private GhostPawn clone;
     private Direction direction;
-    private SpecialMoveEval pawnSpecialMove = new SpecialMoveEval() {
-        @Override
-        public void checkSpecialMove(Field field, Figure figure) {
-            if (!figure.hasMoved()) {
-                int x = figure.getX();
-                int y = figure.getY() + direction.getY() * 2;
-                if (x < 0 | x > 7 | y < 0 | y > 7)
+    private SpecialMoveEval pawnSpecialMove = ((field, figure) -> {
+        if (!figure.hasMoved()) {
+            int x = figure.getX();
+            int y = figure.getY() + direction.getY() * 2;
+            if (x < 0 | x > 7 | y < 0 | y > 7)
+                return;
+            Point fig = new Point(x, y);
+            if (figure.isRestricted()) {
+                if (!figure.getRestrictions().contains(fig))
                     return;
-                Point fig = new Point(x, y);
-                if (figure.isRestricted()) {
-                    if (!figure.getRestrictions().contains(fig))
-                        return;
-                }
-                if (field.getFigure(fig) == null) {
-                    SpecialMove specialMove = new SpecialMove() {
-                        @Override
-                        public void move(Field field) {
-                            Pawn selectedFig = (Pawn) mainFigure;
-                            int xPawn = selectedFig.getX();
-                            int yPawn = selectedFig.getY();
-                            int yDir = selectedFig.getDirection().getY();
-                            GhostPawn ghostPawn = new GhostPawn(selectedFig.getOwner(), xPawn, yPawn + yDir, selectedFig, selectedFig.getGame());
-                            field.setField(ghostPawn, ghostPawn.getX(), ghostPawn.getY());
-                            selectedFig.setClone(ghostPawn);
-                            mainFigure.moveViaOffset(field, 2, selectedFig.getDirection());
-                            mainFigure.setMoved(true);
-                        }
-                    };
-                    specialMove.setFiguresInvolved(figure);
-                    specialMove.setHighlightPoint(new Point(x, y));
-                    figure.getMd().addSpecial(specialMove);
-                }
             }
-
+            if (figure.getOwner().isThreatened()) {
+                if (!figure.getOwner().getKing().getRestrictions().contains(new Point(getX(), getY() + getDirection().getY() * 2)))
+                    ;
+                return;
+            }
+            if (field.getFigure(fig) == null) {
+                SpecialMove specialMove = new SpecialMove() {
+                    @Override
+                    public void move(Field field) {
+                        Pawn selectedFig = (Pawn) mainFigure;
+                        int xPawn = selectedFig.getX();
+                        int yPawn = selectedFig.getY();
+                        int yDir = selectedFig.getDirection().getY();
+                        GhostPawn ghostPawn = new GhostPawn(selectedFig.getOwner(), xPawn, yPawn + yDir, selectedFig, selectedFig.getGame());
+                        field.setField(ghostPawn, ghostPawn.getX(), ghostPawn.getY());
+                        selectedFig.setClone(ghostPawn);
+                        mainFigure.moveViaOffset(field, 2, selectedFig.getDirection());
+                        mainFigure.setMoved(true);
+                    }
+                };
+                specialMove.setFiguresInvolved(figure);
+                specialMove.setHighlightPoint(new Point(x, y));
+                figure.getMd().addSpecial(specialMove);
+            }
         }
-    };
+    });
 
     public Pawn(Player owner, int x, int y, Game game) {
         super(owner, x, y, game);
@@ -175,25 +176,27 @@ public class Pawn extends Figure {
         if (why < 8 & why >= 0) {
             if (field.getFigure(x, why) == null)
                 available.add(new Point(x, why));
+
             if (x + 1 < 8) {
                 Point point = new Point(x + 1, why);
                 Figure fig = field.getFigure(x + 1, why);
                 if (!(fig == null))
                     if (fig.getOwner() != getOwner())
                         attackable.add(point);
-                    else if (enemyKing.isInVicinity(x + 1, why)) {
-                        enemyKing.addBlackList(point);
-                    }
+                if (enemyKing.isInVicinity(x + 1, why)) {
+                    enemyKing.addBlackList(point);
+                }
             }
+
             if (x - 1 >= 0) {
                 Point point = new Point(x - 1, why);
                 Figure fig = field.getFigure(x - 1, why);
                 if (!(fig == null))
                     if (fig.getOwner() != getOwner())
                         attackable.add(new Point(x - 1, why));
-                    else if (enemyKing.isInVicinity(x - 1, why)) {
-                        enemyKing.addBlackList(point);
-                    }
+                if (enemyKing.isInVicinity(x + 1, why)) {
+                    enemyKing.addBlackList(point);
+                }
             }
         }
     }
@@ -204,7 +207,8 @@ public class Pawn extends Figure {
      */
     @Override
     public void delete(Field field) {
-        clone.delete(field);
+        if (clone != null)
+            clone.delete(field);
         super.delete(field);
     }
 
