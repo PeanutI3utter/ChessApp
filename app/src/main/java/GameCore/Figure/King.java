@@ -52,8 +52,8 @@ public class King extends Figure {
                 SpecialMove sm = new SpecialMove() {
                     @Override
                     public void move(Field field) {
-                        mainFigure.moveViaOffset(field, 2, LEFT);
-                        figuresInvolved[1].moveViaOffset(field, 3, RIGHT);
+                        mainFigure.moveViaOffset(2, LEFT);
+                        figuresInvolved[1].moveViaOffset(3, RIGHT);
                     }
                 };
                 sm.setFiguresInvolved(king, rook2);
@@ -78,8 +78,8 @@ public class King extends Figure {
                 SpecialMove sm = new SpecialMove() {
                     @Override
                     public void move(Field field) {
-                        mainFigure.moveViaOffset(field, 2, RIGHT);
-                        figuresInvolved[1].moveViaOffset(field, 2, LEFT);
+                        mainFigure.moveViaOffset(2, RIGHT);
+                        figuresInvolved[1].moveViaOffset(2, LEFT);
                     }
                 };
                 sm.setFiguresInvolved(king, rook1);
@@ -90,7 +90,7 @@ public class King extends Figure {
 
     };
 
-    public King(Player owner, int x, int y, Game game) {
+    public King(Player owner, Integer x, Integer y, Game game) {
         super(owner, x, y, game);
         image = owner.player1() ? R.drawable.kingwhite : R.drawable.kingblack;
         threatendBy = new ArrayList<>();
@@ -98,16 +98,16 @@ public class King extends Figure {
     }
 
     @Override
-    public void updateMoveData(Field field) {
+    public void updateMoveData() {
         MoveData md = getMd();
         md.reset();
-        lineMoves(field, 1, UP, LEFT, RIGHT, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
+        lineMoves(1, UP, LEFT, RIGHT, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
         kingSpecialMove.checkSpecialMove(field, this);
         md.subtract(blackList);
     }
 
     @Override
-    public void delete(Field field) {
+    public void delete() {
 
     }
 

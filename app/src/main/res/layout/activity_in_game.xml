@@ -469,7 +469,8 @@
             android:layout_height="50dp"
             app:layout_constraintLeft_toRightOf="@id/field62"
             app:layout_constraintRight_toLeftOf="@id/field64"
-            app:layout_constraintTop_toBottomOf="@id/field53"/>
+            app:layout_constraintTop_toBottomOf="@id/field53"
+            />
 
         <ImageButton
             android:id="@+id/field64"
@@ -897,9 +898,89 @@
             android:layout_marginTop="10dp"
             app:layout_constraintLeft_toLeftOf="parent"
             android:background="@drawable/whitecircle"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <TextView
+            android:id="@+id/player1"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginTop="10dp"
+            android:textSize="30sp"
+            android:textAlignment="center"/>
+
+
+        <TextView
+            android:id="@+id/player2"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginTop="10dp"
+            android:textSize="30sp"
+            android:textAlignment="center"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <GameCore.Graphics.SelectView
+        android:id="@+id/selector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottommenu">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ffffff">
+
+             <GameCore.SelectButton
+                android:id="@+id/queenselect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/queenwhite"
+                 app:layout_constraintTop_toTopOf="parent"
+                 app:layout_constraintLeft_toLeftOf="parent"
+                />
+
+            <GameCore.SelectButton
+                android:id="@+id/rookselect"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/rookwhite"
+                app:layout_constraintLeft_toRightOf="@id/queenselect"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <GameCore.SelectButton
+                android:id="@+id/bishopselect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bishopwhite"
+                app:layout_constraintLeft_toRightOf="@id/rookselect"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <GameCore.SelectButton
+                android:id="@+id/knightselect"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/horsewhite"
+                app:layout_constraintLeft_toRightOf="@id/bishopselect"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <GameCore.SelectButton
+                android:id="@+id/keep"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/pawnwhite"
+                app:layout_constraintLeft_toRightOf="@id/knightselect"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </GameCore.Graphics.SelectView>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottommenu"

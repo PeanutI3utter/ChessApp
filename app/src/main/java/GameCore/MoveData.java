@@ -71,6 +71,10 @@ public class MoveData {
         return null;
     }
 
+    public boolean hasMoves(){
+        return attackbleFields.size() > 0 || availableMoves.size() > 0 || specialMoves.size() > 0;
+    }
+
     /**
      * adds a field to the set of fields considered to be movable to
      *

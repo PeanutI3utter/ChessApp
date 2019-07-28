@@ -11,11 +11,21 @@ public abstract class SpecialMove {
     protected Point highlightPoint;
     protected boolean anAttack = false;
     protected Point position;
+    protected boolean nextTurn;
+    protected boolean openSelector;
 
     abstract public void move(Field field);
 
     public boolean isAnAttack() {
         return anAttack;
+    }
+
+    public boolean nextTurn(){
+        return nextTurn;
+    }
+
+    public void setNextTurn(boolean nextTurn) {
+        this.nextTurn = nextTurn;
     }
 
     public void setAnAttack(boolean anAttack) {
@@ -32,6 +42,14 @@ public abstract class SpecialMove {
 
     public void setMainFigure(Figure mainFigure) {
         this.mainFigure = mainFigure;
+    }
+
+    public boolean openSelector() {
+        return openSelector;
+    }
+
+    public void setOpenSelector(boolean openSelector) {
+        this.openSelector = openSelector;
     }
 
     public Point getHighlightPoint() {

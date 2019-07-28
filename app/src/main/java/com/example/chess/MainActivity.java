@@ -5,15 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.media.Image;
 import android.os.Bundle;
 import android.widget.ImageView;
 
-import GameCore.Game;
+import GameCore.GameModes.NormalGame;
 import GameCore.Graphics.Board;
 
 public class MainActivity extends AppCompatActivity {
@@ -48,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         */
 
 
-        Intent i = new Intent(MainActivity.this, Game.class);
+        Intent i = new Intent(MainActivity.this, NormalGame.class);
         startActivity(i);
 
     }

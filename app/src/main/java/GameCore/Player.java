@@ -13,10 +13,17 @@ public abstract class Player {
     private King King;
     private int playerColor;
     private ArrayList<Figure> figures;
+    private boolean moves;
+    private String name;
 
-    public Player(boolean player1) {
+    public Player(String name, boolean player1) {
         figures = new ArrayList<>();
         setPlayer1(player1);
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     /**
@@ -74,6 +81,10 @@ public abstract class Player {
         return threatened;
     }
 
+    public boolean canMove(){
+        return moves;
+    }
+
     public void setThreatened(boolean threatened) {
         this.threatened = threatened;
     }
@@ -84,7 +95,15 @@ public abstract class Player {
 
     public void update(Field field) {
         for (Figure f : figures) {
-            f.updateMoveData(field);
+            f.updateMoveData();
+            if(f.getMd().hasMoves())
+                moves = true;
+        }
+    }
+
+    public void onNextTurn(){
+        for (Figure f : figures) {
+            f.onNextTurn();
         }
     }
 
@@ -98,5 +117,6 @@ public abstract class Player {
             f.setRestricted(false);
             f.reset();
         }
+        moves = false;
     }
 }

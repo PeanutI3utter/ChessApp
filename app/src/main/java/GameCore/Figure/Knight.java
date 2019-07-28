@@ -2,7 +2,6 @@ package GameCore.Figure;
 
 import com.example.chess.R;
 
-import GameCore.Field;
 import GameCore.Game;
 import GameCore.MoveData;
 import GameCore.Movement.Jump;
@@ -20,17 +19,21 @@ import static GameCore.Movement.Jump.UUR;
 public class Knight extends Figure{
     private Jump[] moves = {UUL, UUR, ULL, URR, DLL, DRR, DDL, DDR};
 
-    public Knight(Player owner, int x, int y, Game game) {
+    public Knight(){
+        super();
+    }
+
+    public Knight(Player owner, Integer x, Integer y, Game game) {
         super(owner, x, y, game);
         image = owner.player1() ? R.drawable.horsewhite : R.drawable.horseblack;
 
     }
 
     @Override
-    public void updateMoveData(Field field) {
+    public void updateMoveData() {
         MoveData md = getMd();
         md.reset();
-        jumpMoves(field, moves);
+        jumpMoves(moves);
         if (isRestricted()) {
             md.intersection(getRestrictions());
         }

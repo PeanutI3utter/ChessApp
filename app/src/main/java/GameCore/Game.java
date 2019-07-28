@@ -8,42 +8,56 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.chess.R;
 
+import java.util.ArrayList;
+
 import GameCore.Figure.Bishop;
 import GameCore.Figure.Figure;
+import GameCore.Figure.GhostPawn;
 import GameCore.Figure.King;
 import GameCore.Figure.Knight;
 import GameCore.Figure.Pawn;
 import GameCore.Figure.Queen;
 import GameCore.Figure.Rook;
 import GameCore.Graphics.Board;
+import GameCore.Graphics.SelectView;
 import GameCore.Movement.SpecialMove;
 
-public class Game extends AppCompatActivity implements View.OnClickListener {
+public abstract class Game extends AppCompatActivity implements View.OnClickListener {
+    // game mechanics variables
+    protected PlayerQueue queue;
+    protected Player player1;
+    protected Player player2;
+    protected ImageButton[][] fields;
+    protected Field figureField;
+    protected boolean enemySelected;
+    protected int currentTurn;
+    protected int fieldW;
+    protected int fieldH;
+    protected Player currentPlayer;
 
-    PlayerQueue queue;
-    Player player1;
-    Player player2;
-    Canvas canvas;
-    Bitmap bitmap;
-    ImageView imageView;
-    ImageButton[][] fields;
-    Field figureField;
-    Figure selected;
-    boolean highlightEnemy = true;
-    boolean enemySelected;
-    int buttonWH;
-    int imageWH;
-    int currentTurn;
-    int fieldW;
-    int fieldH;
-    Board board;
-    Player currentPlayer;
-    View currentColor;
+    //graphics variables
+    protected Canvas canvas;
+    protected Bitmap bitmap;
+    protected ImageView imageView;
+    protected Figure selected;
+    protected int buttonWH;
+    protected int imageWH;
+    protected Board board;
+    protected View currentColor;
+    protected TextView player1Name;
+    protected TextView player2Name;
+    protected SelectView selector;
+
+    protected boolean selectorOpen = false;
+    protected Figure getSelected = null;
 
 
     @Override
@@ -58,13 +72,11 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         fieldW = 8;
         fieldH = 8;
         currentTurn = 0;
-        player1 = new Human(true);
-        player2 = new Human(false);
-        queue = new PlayerQueue(player2, player1);
-        currentPlayer = queue.next();
-        currentColor = findViewById(R.id.currentcolor);
-        currentColor.setBackgroundColor(Color.WHITE);
+        player1 = new Human("Player 1",true);
+        player2 = new Human("Player 2", false);
 
+        //
+        initBasicComponents();
 
         //init drawing components
         initDrawingComp();
@@ -85,6 +97,21 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         draw();
     }
 
+    public void initBasicComponents(){
+        queue = new PlayerQueue(player2, player1);
+        currentPlayer = queue.next();
+        currentColor = findViewById(R.id.currentcolor);
+        currentColor.setBackgroundColor(Color.WHITE);
+        player1Name = findViewById(R.id.player1);
+        player2Name = findViewById(R.id.player2);
+        player1Name.setTextColor(Color.WHITE);
+        player2Name.setTextColor(Color.BLACK);
+        player1Name.setText(player1.getName());
+        player2Name.setText(player2.getName());
+        selector = findViewById(R.id.selector);
+        selector.init();
+    }
+
     /**
      * initiates canvas and bitmap object
      */
@@ -93,6 +120,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         imageView.setImageBitmap(bitmap);
+        selector = findViewById(R.id.selector);
     }
 
     /**
@@ -125,10 +153,44 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         }
     }
 
+    /*
+        assign listeners to selector buttons
+     */
+    public void getSelectorButton(){
+        SelectButton queen = findViewById(R.id.queenselect);
+        queen.setType("queen");queen.setOnClickListener(this);
+        SelectButton rook = findViewById(R.id.rookselect);
+        rook.setType("rook");
+        rook.setOnClickListener(this);
+        SelectButton bishop = findViewById(R.id.bishopselect);
+        bishop.setType("bishop");
+        bishop.setOnClickListener(this);
+        SelectButton knight = findViewById(R.id.knightselect);
+        knight.setType("knight");
+        knight.setOnClickListener(this);
+        SelectButton keep = findViewById(R.id.keep);
+        keep.setType("keep");
+        keep.setOnClickListener(this);
+    }
 
+    public void openSelector(){
+        selectorOpen = true;
+    }
+
+    /*
+        returns player queue
+     */
     public PlayerQueue getQueue() {
         return queue;
     }
+
+    /*
+        returns current field
+     */
+    public Field getField() {
+        return figureField;
+    }
+
 
     /**
      * loads the basic chess figure layout
@@ -194,8 +256,17 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                     field.setImageResource(fig.getImage());
             }
         }
+        if(selectorOpen)
+            selector.setVisibility(View.VISIBLE);
+        else
+            selector.setVisibility(View.INVISIBLE);
         board.drawBoard();
     }
+
+    /**
+     * @return 0 if game goes on, 1 if someone has one, 2 if draw
+     */
+    abstract public short checkWin();
 
     /**
      * @param fig
@@ -205,7 +276,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     public void move(Figure fig, Point point) {
         Figure dest = figureField.getFigure(point.x, point.y);
         if (dest != null)
-            dest.delete(figureField);
+            dest.delete();
         figureField.setField(null, fig.getX(), fig.getY());
         figureField.setField(fig, point.x, point.y);
         fig.setPos(point);
@@ -227,12 +298,37 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
      * evaluates current state and evalutaes next step
      */
     public void onClick(View view) {
+        if(selectorOpen && view instanceof SelectButton) {
+            Figure change = selected;
+            switch (((SelectButton)view).getType()){
+                case "queen":
+                    change = new Queen(currentPlayer, selected.getX(), selected.getY(), this);
+                    break;
+                case "rook":
+                    change = new Rook(currentPlayer, selected.getX(), selected.getY(), this);
+                    break;
+                case "bishop":
+                    change = new Bishop(currentPlayer, selected.getX(), selected.getY(), this);
+                    break;
+                case "knight":
+                    change = new Knight(currentPlayer, selected.getX(), selected.getY(), this);
+                    break;
+                case "keep":
+            }
+            ((Pawn)selected).exchange(change);
+            selectorOpen = false;
+            draw();
+            return;
+        }
+        if(selectorOpen)
+            return;
         Point clickedPoint = getClickedField(view.getId());
         Figure figure = figureField.getFigure(clickedPoint);
         if (selected == null) {
             select(figure);
         } else {
-            switch (selected.doSomething(figureField, figure, clickedPoint)) {
+            int next = selected.doSomething(figure, clickedPoint);
+            switch (next) {
                 case 0:
                     nextTurn();
                     break;
@@ -241,6 +337,9 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                     break;
                 case 2:
                     select(figure);
+                    break;
+                case 3:
+                    openSelector();
             }
         }
         draw();
@@ -250,39 +349,21 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
      * selects the figure if figure is of current player
      */
     public void select(Figure fig) {
-        if (fig == null)
+        if (fig == null | fig instanceof GhostPawn)
             return;
         if (fig.getOwner() == currentPlayer)
             highlight(fig);
     }
 
 
-    public void afterSelection(Figure figure, Point clickedPoint) {
-        if (figure == null) {
-            if (selected.getMd().getAvailableMoves().contains(clickedPoint)) {
-                move(selected, clickedPoint);
-                nextTurn();
-            } else {
-                SpecialMove specialMove = selected.getMd().getSpecialMove(clickedPoint);
-                if (specialMove != null) {
-                    specialMove.move(figureField);
-                    nextTurn();
-                } else
-                    resetSelected();
-            }
-        } else if (figure == selected) {
-            resetSelected();
-        } else if (figure.getOwner() == currentPlayer) {
-            board.hardResetBoard();
-            highlight(figure);
-        } else {
-            if (selected.getMd().getAttackbleFields().contains(figure.getPos())) {
-                move(selected, figure.getPos());
-                nextTurn();
-            } else {
-                resetSelected();
-            }
-        }
+    public void win(Player player){
+        Toast toast = Toast.makeText(getApplicationContext(), player.getName() + " won!", Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
+
+    public void gameDraw(){
+
     }
 
 
@@ -294,12 +375,25 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         Player oldplayer = currentPlayer;
         currentPlayer = queue.next();
         currentPlayer.reset();
+        oldplayer.reset();
         oldplayer.update(figureField);
         board.hardResetBoard();
         currentColor.setBackground(getDrawable(currentPlayer.getPlayerColor()));
         currentPlayer.update(figureField);
+        currentPlayer.onNextTurn();
+        switch (checkWin()){
+            case 0:
+                break;
+            case 1:
+                win(oldplayer);
+                break;
+            case 2:
+                gameDraw();
+                break;
+        }
         if (currentPlayer.isThreatened())
             board.highlightAttack(currentPlayer.getKing());
+        selector.update(currentPlayer);
         currentTurn++;
     }
 
