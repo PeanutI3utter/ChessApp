@@ -2,17 +2,11 @@ package GameCore;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.ImageButton;
 
 import androidx.appcompat.widget.AppCompatImageButton;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
-import GameCore.Figure.Figure;
-
 /**
- * prototype not in use
+ * custom button returning a given selection value(type)
  */
 public class SelectButton extends AppCompatImageButton {
     private String type;

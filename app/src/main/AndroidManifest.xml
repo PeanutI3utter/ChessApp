@@ -19,6 +19,7 @@
         <activity android:name="GameCore.GameModes.NormalGame"
             android:label="@string/app_name">
         </activity>
+        <activity android:name="test.VariousTest" />
     </application>
 
 </manifest>

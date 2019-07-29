@@ -7,16 +7,19 @@ import java.util.ArrayList;
 import GameCore.Field;
 import GameCore.Game;
 import GameCore.MoveData;
-import GameCore.Movement.Direction;
-import GameCore.Movement.Jump;
-import GameCore.Movement.Movement;
-import GameCore.Movement.SpecialMove;
+import GameCore.Movement.MacroMovements.Attack;
+import GameCore.Movement.MacroMovements.Move;
+import GameCore.Movement.MacroMovements.SingleMove;
+import GameCore.Movement.MacroMovements.SpecialMove;
+import GameCore.Movement.MoveEval.PotentialMove;
+import GameCore.Movement.MovementDescriber.Direction;
+import GameCore.Movement.MovementDescriber.Jump;
+import GameCore.Movement.MovementDescriber.MovementCategory;
+import GameCore.Movement.MovementDescriber.SpecialMoveEval;
 import GameCore.Player;
 
-import static GameCore.Movement.Direction.DOWN;
-import static GameCore.Movement.Direction.LEFT;
-import static GameCore.Movement.Direction.RIGHT;
-import static GameCore.Movement.Direction.UP;
+import static GameCore.Movement.MovementDescriber.Direction.DOWN;
+import static GameCore.Movement.MovementDescriber.Direction.UP;
 
 /**
  * abstract model of a figure in chess
@@ -31,6 +34,8 @@ public abstract class Figure {
     private ArrayList<Point> restrictions;
     private boolean moved;
     protected Field field;
+    protected ArrayList<PotentialMove> standardMoves;
+    protected ArrayList<SpecialMoveEval> specialMovesEval;
 
     public Figure(){
         md = new MoveData();
@@ -43,6 +48,8 @@ public abstract class Figure {
         this.game = game;
         field = game.getField();
         moved = false;
+        standardMoves = new ArrayList<>();
+        specialMovesEval = new ArrayList<>();
     }
 
     public Figure(Player owner, Point pos, Game game) {
@@ -52,6 +59,8 @@ public abstract class Figure {
         this.game = game;
         field = game.getField();
         moved = false;
+        standardMoves = new ArrayList<>();
+        specialMovesEval = new ArrayList<>();
     }
 
     /**
@@ -130,6 +139,14 @@ public abstract class Figure {
         return game;
     }
 
+    public ArrayList<PotentialMove> getStandardMoves() {
+        return standardMoves;
+    }
+
+    public ArrayList<SpecialMoveEval> getSpecialMoves() {
+        return specialMovesEval;
+    }
+
     /**
      * returns true if figures movement is restricted due to its relative position to the king
      *
@@ -162,6 +179,28 @@ public abstract class Figure {
      */
     public ArrayList<Point> getRestrictions() {
         return restrictions;
+    }
+
+    /**
+     * gets move that has been chosen/clicked
+     *
+     * @param clickedPoint
+     * @return
+     */
+    public Move getMove(Point clickedPoint) {
+        for (SpecialMove sm : getMd().getSpecialMoves()) {
+            if (sm.getHighlight().equals(clickedPoint))
+                return sm;
+        }
+        for (SingleMove single : getMd().getAvailableMoves()) {
+            if (single.getHighlight().equals(clickedPoint))
+                return single;
+        }
+        for (Attack attack : getMd().getAttacks()) {
+            if (attack.getHighlight().equals(clickedPoint))
+                return attack;
+        }
+        return null;
     }
 
 
@@ -230,7 +269,7 @@ public abstract class Figure {
     }
 
 
-    public void moveViaOffset(int amount, Direction direction) {
+    public void moveViaOffset(int amount, MovementCategory direction) {
         int x = getX() + direction.getX() * amount;
         int y = getY() + direction.getY() * amount;
         field.setField(null, this.getX(), this.getY());
@@ -244,28 +283,29 @@ public abstract class Figure {
     /**
      * @param range range a figure can move
      * @deprecated marks all fields figure can move to/ attack
-     */
+
     public void horizontalMove(int range) {
-        ArrayList<Point> available = getMd().getAvailableMoves();
-        ArrayList<Point> attackable = getMd().getAttackbleFields();
-        Direction[] directions = {RIGHT, LEFT};
-        int range0 = range;
-        for (Direction d : directions) {
-            int dir = d.getX();
-            for (int i = 1; pos.x + i * dir < 8 & pos.x + i * dir >= 0 && range > 0; i++) {
-                int ex = pos.x + i * dir;
-                Figure fig = field.getFigure(ex, pos.y);
-                if (!(fig == null)) {
-                    if (fig.getOwner() != getOwner())
-                        attackable.add(new Point(ex, pos.y));
-                    break;
-                }
-                available.add(new Point(ex, pos.y));
-                range--;
-            }
-            range = range0;
-        }
+    ArrayList<Point> available = getMd().getAvailableMoves();
+    ArrayList<Point> attackable = getMd().getAttackbleFields();
+    Direction[] directions = {RIGHT, LEFT};
+    int range0 = range;
+    for (Direction d : directions) {
+    int dir = d.getX();
+    for (int i = 1; pos.x + i * dir < 8 & pos.x + i * dir >= 0 && range > 0; i++) {
+    int ex = pos.x + i * dir;
+    Figure fig = field.getFigure(ex, pos.y);
+    if (!(fig == null)) {
+    if (fig.getOwner() != getOwner())
+    attackable.add(new Point(ex, pos.y));
+    break;
     }
+    available.add(new Point(ex, pos.y));
+    range--;
+    }
+    range = range0;
+    }
+    }
+     */
 
 
     /**
@@ -273,8 +313,8 @@ public abstract class Figure {
      * @deprecated marks all fields figure can move to/ attack
      */
     public void verticalMove(int range) {
-        ArrayList<Point> available = md.getAvailableMoves();
-        ArrayList<Point> attackable = md.getAttackbleFields();
+        ArrayList<SingleMove> available = md.getAvailableMoves();
+        ArrayList<Attack> attackable = md.getAttacks();
         int range0 = range;
         Direction[] directions = {UP, DOWN};
         for (Direction d : directions) {
@@ -285,11 +325,14 @@ public abstract class Figure {
                 int why = pos.y + i * dir;
                 Figure fig = field.getFigure(pos.x, why);
                 if(fig == null || fig instanceof  GhostPawn)
-                    available.add(new Point(pos.x, why));
+                    //available.add(new Point(pos.x, why))
+                    ;
                 else {
+                    /*
                     if (fig.getOwner() != getOwner())
                         attackable.add(new Point(pos.x, why));
                     break;
+                    */
                 }
                 range--;
             }
@@ -304,16 +347,16 @@ public abstract class Figure {
      * @param range     range a figure can move
      * @param movements movements a figure is able to execute
      */
-    public void hybridMove(int range, Movement... movements) {
-        ArrayList<Point> av = md.getAvailableMoves();
-        ArrayList<Point> at = md.getAttackbleFields();
+    public void hybridMove(int range, MovementCategory... movements) {
+        ArrayList<SingleMove> av = md.getAvailableMoves();
+        ArrayList<Attack> at = md.getAttacks();
         Player enemy = game.getQueue().getOtherPlayer(getOwner());
         King enemyKing = enemy.getKing();
         int kingX = enemyKing.getX();
         int kingY = enemyKing.getY();
         int range0 = range;
         dir:
-        for (Movement movement : movements) {
+        for (MovementCategory movement : movements) {
             ArrayList<Point> points = new ArrayList<>();
             Figure enemyInPath = null;
             int numOfEnemiesInPath = 0;
@@ -322,19 +365,22 @@ public abstract class Figure {
             int i = 1;
             int j = 1;
             if (movement instanceof Jump) {
-                int x = pos.x + xDir;
-                int y = pos.y + yDir;
+                int x = pos.x + movement.getX();
+                int y = pos.y + movement.getY();
+                if (x > 7 | x < 0 | y < 0 | y > 7)
+                    continue;
                 Point point = new Point(x, y);
                 Figure checkingFig = field.getFigure(point);
-                if (checkingFig == null || checkingFig instanceof  GhostPawn) {
-                    av.add(point);
+                if (checkingFig == null || checkingFig instanceof GhostPawn) {
+                    av.add(new SingleMove(this, point));
+                    continue;
                 }else if (checkingFig.getOwner() != getOwner()) {
                     if (checkingFig instanceof King) {
                         enemy.setThreatened(true);
                         enemyKing.setRestrictions(point);
                         enemyKing.addThreatendBy(this);
                     }
-                    at.add(point);
+                    at.add(new Attack(this, checkingFig, point));
                 }
                 if (isInVicinity(x, y, kingX, kingY)) {
                     enemyKing.addBlackList(point);
@@ -352,7 +398,7 @@ public abstract class Figure {
                         i++;
                         continue;
                     }
-                    av.add(point);
+                    av.add(new SingleMove(this, point));
                     if (isInVicinity(ex, why, kingX, kingY) & numOfEnemiesInPath < 1)
                         enemyKing.addBlackList(point);
                 } else if (fig.getOwner() == getOwner()) {
@@ -367,7 +413,7 @@ public abstract class Figure {
                         fig.setRestrictions(new ArrayList<>(points));
                         ((King) fig).addThreatendBy(this);
                         ((King) fig).addBlackList(new Point(ex + i * xDir, why + i * yDir));
-                        at.add(point);
+                        at.add(new Attack(this, fig, point));
                     } else {
                         enemyInPath.setRestricted(true);
                         enemyInPath.setRestrictions(points);
@@ -375,7 +421,7 @@ public abstract class Figure {
                     }
                 } else {
                     if (numOfEnemiesInPath < 1) {
-                        at.add(point);
+                        at.add(new Attack(this, fig, point));
                         numOfEnemiesInPath++;
                         enemyInPath = fig;
                     } else {
@@ -395,8 +441,8 @@ public abstract class Figure {
     }
 
     public void lineMoves(int range, Direction... directions) {
-        ArrayList<Point> av = md.getAvailableMoves();
-        ArrayList<Point> at = md.getAttackbleFields();
+        ArrayList<SingleMove> av = md.getAvailableMoves();
+        ArrayList<Attack> at = md.getAttacks();
         Player enemy = game.getQueue().getOtherPlayer(getOwner());
         King enemyKing = enemy.getKing();
         int kingX = enemyKing.getX();
@@ -421,7 +467,7 @@ public abstract class Figure {
                         i++;
                         continue;
                     }
-                    av.add(point);
+                    av.add(new SingleMove(this, point));
                     if (isInVicinity(ex, why, kingX, kingY) & numOfEnemiesInPath < 1)
                         enemyKing.addBlackList(point);
                 } else if (fig.getOwner() == getOwner()) {
@@ -436,7 +482,7 @@ public abstract class Figure {
                         fig.setRestrictions(new ArrayList<>(points));
                         ((King) fig).addThreatendBy(this);
                         ((King) fig).addBlackList(new Point(ex + i * xDir, why + i * yDir));
-                        at.add(point);
+                        at.add(new Attack(this, fig, point));
                     } else {
                         enemyInPath.setRestricted(true);
                         enemyInPath.setRestrictions(points);
@@ -444,7 +490,7 @@ public abstract class Figure {
                     }
                 } else {
                     if (numOfEnemiesInPath < 1) {
-                        at.add(point);
+                        at.add(new Attack(this, fig, point));
                         numOfEnemiesInPath++;
                         enemyInPath = fig;
                     } else {
@@ -473,8 +519,8 @@ public abstract class Figure {
      * @param jumps
      */
     public void jumpMoves(Jump... jumps) {
-        ArrayList<Point> av = md.getAvailableMoves();
-        ArrayList<Point> at = md.getAttackbleFields();
+        ArrayList<SingleMove> av = md.getAvailableMoves();
+        ArrayList<Attack> at = md.getAttacks();
         Player enemy = game.getQueue().getOtherPlayer(getOwner());
         King enemyKing = enemy.getKing();
         int kingX = enemyKing.getX();
@@ -487,7 +533,7 @@ public abstract class Figure {
             Point point = new Point(x, y);
             Figure checkingFig = field.getFigure(point);
             if (checkingFig == null || checkingFig instanceof GhostPawn) {
-                av.add(point);
+                av.add(new SingleMove(this, point));
                 continue;
             }else if (checkingFig.getOwner() != getOwner()) {
                 if (checkingFig instanceof King) {
@@ -495,7 +541,7 @@ public abstract class Figure {
                     enemyKing.setRestrictions(point);
                     enemyKing.addThreatendBy(this);
                 }
-                at.add(point);
+                at.add(new Attack(this, checkingFig, point));
             }
             if (isInVicinity(x, y, kingX, kingY)) {
                 enemyKing.addBlackList(point);
@@ -504,7 +550,7 @@ public abstract class Figure {
     }
 
     public boolean isInVicinity(int x, int y) {
-        return Math.abs((double) pos.x - x) <= 1 & Math.abs((double) pos.y - y) <= 1;
+        return Math.abs((double) pos.x - x) <= 1 && Math.abs((double) pos.y - y) <= 1;
     }
 
     /**
@@ -514,42 +560,5 @@ public abstract class Figure {
      * @param clickedPoint clicked point
      * @return 0 if a move or attack was successful/ 1 if clicked figure cannot be selected/ 2 if click was a reselection
      */
-    public byte doSomething(Figure figure, Point clickedPoint) {
-        if (figure == null) {
-            SpecialMove specialMove = this.getMd().getSpecialMove(clickedPoint);
-            if (specialMove != null) {
-                if (!specialMove.isAnAttack()) {
-                    specialMove.move(field);
-                    if(specialMove.openSelector())
-                        return 3;
-                    return 0;
-                }
-            }else if (this.getMd().getAvailableMoves().contains(clickedPoint)) {
-                move(clickedPoint.x, clickedPoint.y);
-                return 0;
-            }
-            return 1;
-        } else if (figure == this) {
-            return 1;
-        } else if (figure.getOwner() == getOwner()) {
-            if (figure instanceof GhostPawn) {
-                figure.delete();
-                move(clickedPoint);
-                return 0;
-            }
-            return 2;
-        } else {
-            SpecialMove specialMove = this.getMd().getSpecialMove(clickedPoint);
-            if (specialMove != null) {
-                if (specialMove.isAnAttack()) {
-                    specialMove.move(field);
-                    return 0;
-                }
-            }else if (this.getMd().getAttackbleFields().contains(clickedPoint)) {
-                attack(clickedPoint);
-                return 0;
-            }
-        }
-        return 1;
-    }
+
 }

@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.chess.R;
 
@@ -28,7 +27,10 @@ import GameCore.Figure.Queen;
 import GameCore.Figure.Rook;
 import GameCore.Graphics.Board;
 import GameCore.Graphics.SelectView;
-import GameCore.Movement.SpecialMove;
+import GameCore.Mechanisms.InputHandler;
+import GameCore.Mechanisms.MoveEvaluator;
+import GameCore.Mechanisms.MoveProcessor;
+
 
 public abstract class Game extends AppCompatActivity implements View.OnClickListener {
     // game mechanics variables
@@ -42,6 +44,10 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     protected int fieldW;
     protected int fieldH;
     protected Player currentPlayer;
+    protected InputHandler inputHandler;
+    protected MoveEvaluator moveEvaluator;
+    protected MoveProcessor moveProcessor;
+    protected ArrayList<SelectButton> selectButtons;
 
     //graphics variables
     protected Canvas canvas;
@@ -75,8 +81,6 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         player1 = new Human("Player 1",true);
         player2 = new Human("Player 2", false);
 
-        //
-        initBasicComponents();
 
         //init drawing components
         initDrawingComp();
@@ -84,10 +88,15 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         //load board image
         initBoard();
 
+        //
+        initBasicComponents();
+
 
         //get all field buttons
         fields = new ImageButton[8][8];
         getAllButtons();
+
+        getSelectorButton();
 
 
         //load basic layout
@@ -95,6 +104,8 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
 
         nextTurn();
         draw();
+
+
     }
 
     public void initBasicComponents(){
@@ -110,6 +121,9 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         player2Name.setText(player2.getName());
         selector = findViewById(R.id.selector);
         selector.init();
+        moveProcessor = new MoveProcessor(this);
+        moveEvaluator = new MoveEvaluator(this);
+        inputHandler = new InputHandler(this, moveProcessor);
     }
 
     /**
@@ -157,20 +171,27 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         assign listeners to selector buttons
      */
     public void getSelectorButton(){
+        selectButtons = new ArrayList<>();
         SelectButton queen = findViewById(R.id.queenselect);
-        queen.setType("queen");queen.setOnClickListener(this);
+        queen.setType("queen");
+        queen.setOnClickListener(this);
+        selectButtons.add(queen);
         SelectButton rook = findViewById(R.id.rookselect);
         rook.setType("rook");
         rook.setOnClickListener(this);
+        selectButtons.add(rook);
         SelectButton bishop = findViewById(R.id.bishopselect);
         bishop.setType("bishop");
         bishop.setOnClickListener(this);
+        selectButtons.add(bishop);
         SelectButton knight = findViewById(R.id.knightselect);
         knight.setType("knight");
         knight.setOnClickListener(this);
+        selectButtons.add(knight);
         SelectButton keep = findViewById(R.id.keep);
         keep.setType("keep");
         keep.setOnClickListener(this);
+        selectButtons.add(keep);
     }
 
     public void openSelector(){
@@ -185,12 +206,26 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     }
 
     /*
+        get selected figure
+     */
+    public Figure getSelected() {
+        return selected;
+    }
+
+    /*
         returns current field
      */
     public Field getField() {
         return figureField;
     }
 
+    public MoveEvaluator getMoveEvaluator() {
+        return moveEvaluator;
+    }
+
+    public MoveProcessor getMoveProcessor() {
+        return moveProcessor;
+    }
 
     /**
      * loads the basic chess figure layout
@@ -317,31 +352,14 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
             }
             ((Pawn)selected).exchange(change);
             selectorOpen = false;
+            nextTurn();
             draw();
             return;
         }
         if(selectorOpen)
             return;
         Point clickedPoint = getClickedField(view.getId());
-        Figure figure = figureField.getFigure(clickedPoint);
-        if (selected == null) {
-            select(figure);
-        } else {
-            int next = selected.doSomething(figure, clickedPoint);
-            switch (next) {
-                case 0:
-                    nextTurn();
-                    break;
-                case 1:
-                    resetSelected();
-                    break;
-                case 2:
-                    select(figure);
-                    break;
-                case 3:
-                    openSelector();
-            }
-        }
+        inputHandler.handleInput(clickedPoint);
         draw();
     }
 
@@ -376,10 +394,10 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         currentPlayer = queue.next();
         currentPlayer.reset();
         oldplayer.reset();
-        oldplayer.update(figureField);
+        oldplayer.update();
         board.hardResetBoard();
         currentColor.setBackground(getDrawable(currentPlayer.getPlayerColor()));
-        currentPlayer.update(figureField);
+        currentPlayer.update();
         currentPlayer.onNextTurn();
         switch (checkWin()){
             case 0:

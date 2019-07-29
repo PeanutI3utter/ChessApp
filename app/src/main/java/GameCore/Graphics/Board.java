@@ -13,7 +13,10 @@ import java.util.ArrayList;
 
 import GameCore.Figure.Figure;
 import GameCore.Figure.King;
-import GameCore.Movement.SpecialMove;
+import GameCore.Movement.MacroMovements.Attack;
+import GameCore.Movement.MacroMovements.Move;
+import GameCore.Movement.MacroMovements.SingleMove;
+import GameCore.Movement.MacroMovements.SpecialMove;
 
 import static GameCore.Graphics.FieldState.ATTACKABLE;
 import static GameCore.Graphics.FieldState.ATTACKED;
@@ -23,6 +26,9 @@ import static GameCore.Graphics.FieldState.NOTSELECTED;
 import static GameCore.Graphics.FieldState.SELECTED;
 import static GameCore.Graphics.FieldState.SPECIAL;
 
+/**
+ *
+ */
 public class Board extends View {
     private Canvas canvas;
     private Bitmap bitmap;
@@ -36,7 +42,6 @@ public class Board extends View {
     private Paint paint;
     private int w;
     private int h;
-
 
 
     public Board(Context context) {
@@ -103,6 +108,9 @@ public class Board extends View {
         hardResetBoard();
     }
 
+    /**
+     * resets selection highlight
+     */
     public void resetBoard(){
         for (int row = 0; row < 8; row++) {
             for (int line = 0; line < 8; line++) {
@@ -113,6 +121,9 @@ public class Board extends View {
         }
     }
 
+    /**
+     * resets all highlights including threat hightlights
+     */
     public void hardResetBoard() {
         for(int row = 0; row < 8; row++){
             for(int line = 0; line < 8; line++){
@@ -164,17 +175,17 @@ public class Board extends View {
      */
     public void highlight(Figure fig) {
         hardResetBoard();
-        ArrayList<Point> av = fig.getMd().getAvailableMoves();
-        ArrayList<Point> at = fig.getMd().getAttackbleFields();
+        ArrayList<SingleMove> av = fig.getMd().getAvailableMoves();
+        ArrayList<Attack> at = fig.getMd().getAttacks();
         ArrayList<SpecialMove> specialMoves = fig.getMd().getSpecialMoves();
-        for (Point p : av) {
-            board[p.x][p.y].setState(MOVEABLE);
+        for (Move move : av) {
+            board[move.getHighlight().x][move.getHighlight().y].setState(MOVEABLE);
         }
-        for (Point p : at) {
-            board[p.x][p.y].setState(ATTACKABLE);
+        for (Attack attack : at) {
+            board[attack.getHighlight().x][attack.getHighlight().y].setState(ATTACKABLE);
         }
         for (SpecialMove sm : specialMoves) {
-            Point highlight = sm.getHighlightPoint();
+            Point highlight = sm.getHighlight();
             board[highlight.x][highlight.y].setState(SPECIAL);
         }
         board[fig.getX()][fig.getY()].setState(SELECTED);

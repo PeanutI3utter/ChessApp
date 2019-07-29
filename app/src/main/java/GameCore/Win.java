@@ -1,5 +1,8 @@
 package GameCore;
 
+/**
+ * was a prototype but will probably be removed in the near future
+ */
 public abstract class Win {
     Game game;
 

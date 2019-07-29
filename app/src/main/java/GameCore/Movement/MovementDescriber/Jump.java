@@ -1,6 +1,9 @@
-package GameCore.Movement;
+package GameCore.Movement.MovementDescriber;
 
-public enum Jump implements Movement {
+/**
+ * self explainatory
+ */
+public enum Jump implements MovementCategory {
     //U: up, D: down, L: left, R: right
     UUL(-1, -2), UUR(1, -2), ULL(-2, -1), URR(2, -1), DLL(-2, 1), DRR(2, 1), DDL(-1, 2), DDR(1, 2);
 

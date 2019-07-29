@@ -9,29 +9,35 @@ import java.util.ArrayList;
 import GameCore.Field;
 import GameCore.Game;
 import GameCore.MoveData;
-import GameCore.Movement.SpecialMove;
-import GameCore.Movement.SpecialMoveEval;
+import GameCore.Movement.MacroMovements.MultiMove;
+import GameCore.Movement.MacroMovements.SpecialMove;
+import GameCore.Movement.MoveEval.PotentialMove;
+import GameCore.Movement.MovementDescriber.Direction;
+import GameCore.Movement.MovementDescriber.SpecialMoveEval;
 import GameCore.Player;
 import GameCore.Utils.Util;
 
-import static GameCore.Movement.Direction.DOWN;
-import static GameCore.Movement.Direction.DOWNLEFT;
-import static GameCore.Movement.Direction.DOWNRIGHT;
-import static GameCore.Movement.Direction.LEFT;
-import static GameCore.Movement.Direction.RIGHT;
-import static GameCore.Movement.Direction.UP;
-import static GameCore.Movement.Direction.UPLEFT;
-import static GameCore.Movement.Direction.UPRIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.DOWN;
+import static GameCore.Movement.MovementDescriber.Direction.DOWNLEFT;
+import static GameCore.Movement.MovementDescriber.Direction.DOWNRIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.LEFT;
+import static GameCore.Movement.MovementDescriber.Direction.RIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.UP;
+import static GameCore.Movement.MovementDescriber.Direction.UPLEFT;
+import static GameCore.Movement.MovementDescriber.Direction.UPRIGHT;
 
 public class King extends Figure {
     private ArrayList<Figure> threatendBy;
     private ArrayList<Point> blackList;
-    private SpecialMoveEval kingSpecialMove = (field, figure) -> {
+    Direction[] directions = {UP, LEFT, RIGHT, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT};
+    private SpecialMoveEval kingSpecialMove = (game, figure) -> {
+        Field field = game.getField();
+        ArrayList<SpecialMove> specialMoves = new ArrayList<>();
         if (figure.getOwner().isThreatened())
-            return;
+            return null;
         King king = (King) figure;
         if (king.hasMoved())
-            return;
+            return null;
         int kingheight = king.getY();
         Figure rook1 = field.getFigure(7, kingheight);
         Figure rook2 = field.getFigure(0, kingheight);
@@ -49,16 +55,11 @@ public class King extends Figure {
                     proceed = false;
             }
             if (proceed) {
-                SpecialMove sm = new SpecialMove() {
-                    @Override
-                    public void move(Field field) {
-                        mainFigure.moveViaOffset(2, LEFT);
-                        figuresInvolved[1].moveViaOffset(3, RIGHT);
-                    }
-                };
-                sm.setFiguresInvolved(king, rook2);
-                sm.setHighlightPoint(new Point(2, kingheight));
-                king.getMd().addSpecial(sm);
+                MultiMove mm = new MultiMove();
+                mm.addMovement(king, 2, LEFT);
+                mm.addMovement(rook2, 3, RIGHT);
+                mm.setHighlight(new Point(2, kingheight));
+                specialMoves.add(mm);
             }
         }
         if (rook1 instanceof Rook) {
@@ -75,19 +76,14 @@ public class King extends Figure {
                     proceed = false;
             }
             if (proceed) {
-                SpecialMove sm = new SpecialMove() {
-                    @Override
-                    public void move(Field field) {
-                        mainFigure.moveViaOffset(2, RIGHT);
-                        figuresInvolved[1].moveViaOffset(2, LEFT);
-                    }
-                };
-                sm.setFiguresInvolved(king, rook1);
-                sm.setHighlightPoint(new Point(6, kingheight));
-                king.getMd().addSpecial(sm);
+                MultiMove mm = new MultiMove();
+                mm.addMovement(king, 2, RIGHT);
+                mm.addMovement(rook1, 2, LEFT);
+                mm.setHighlight(new Point(6, kingheight));
+                specialMoves.add(mm);
             }
         }
-
+        return specialMoves.size() > 0 ? specialMoves : null;
     };
 
     public King(Player owner, Integer x, Integer y, Game game) {
@@ -95,14 +91,18 @@ public class King extends Figure {
         image = owner.player1() ? R.drawable.kingwhite : R.drawable.kingblack;
         threatendBy = new ArrayList<>();
         blackList = new ArrayList<>();
+        for (Direction direction : directions) {
+            standardMoves.add(new PotentialMove(direction, 1, 0, true, true));
+        }
+        specialMovesEval.add(kingSpecialMove);
     }
 
     @Override
     public void updateMoveData() {
         MoveData md = getMd();
         md.reset();
-        lineMoves(1, UP, LEFT, RIGHT, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
-        kingSpecialMove.checkSpecialMove(field, this);
+        game.getMoveEvaluator().evalMoves(this);
+        game.getMoveEvaluator().specialMoves(this);
         md.subtract(blackList);
     }
 
@@ -126,17 +126,21 @@ public class King extends Figure {
         if(getRestrictions() == null){
             super.setRestrictions(restrictions);
         }else{
-            Util.intersectArrayListTo1(getRestrictions(), restrictions);
+            Util.intersectListTo1(getRestrictions(), restrictions);
         }
     }
 
     public void setRestrictions(Point p){
         if(p == null){
             super.setRestrictions(new ArrayList<>());
-        }else{
+        } else if (getRestrictions() == null) {
+            ArrayList<Point> newRestriction = new ArrayList<>();
+            newRestriction.add(p);
+            super.setRestrictions(newRestriction);
+        } else {
             ArrayList<Point> al = new ArrayList<>();
             al.add(p);
-            Util.intersectArrayListTo1(getRestrictions(), al);
+            Util.intersectListTo1(getRestrictions(), al);
         }
     }
 

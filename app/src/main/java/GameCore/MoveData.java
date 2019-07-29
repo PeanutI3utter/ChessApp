@@ -4,7 +4,10 @@ import android.graphics.Point;
 
 import java.util.ArrayList;
 
-import GameCore.Movement.SpecialMove;
+import GameCore.Movement.MacroMovements.Attack;
+import GameCore.Movement.MacroMovements.Move;
+import GameCore.Movement.MacroMovements.SingleMove;
+import GameCore.Movement.MacroMovements.SpecialMove;
 import GameCore.Utils.Util;
 
 
@@ -12,12 +15,12 @@ import GameCore.Utils.Util;
  * class that contains movement data of a figure
  */
 public class MoveData {
-    private ArrayList<Point> availableMoves;
-    private ArrayList<Point> attackbleFields;
+    private ArrayList<SingleMove> availableMoves;
+    private ArrayList<Attack> attackbleFields;
     private ArrayList<SpecialMove> specialMoves;
 
     public MoveData() {
-        availableMoves = new ArrayList<>();
+        availableMoves = new ArrayList<SingleMove>();
         attackbleFields = new ArrayList<>();
         specialMoves = new ArrayList<>();
     }
@@ -27,7 +30,7 @@ public class MoveData {
      *
      * @return all attackable points
      */
-    public ArrayList<Point> getAttackbleFields() {
+    public ArrayList<Attack> getAttacks() {
         return attackbleFields;
     }
 
@@ -36,18 +39,18 @@ public class MoveData {
      *
      * @param attackbleFields
      */
-    public void setAttackbleFields(ArrayList<Point> attackbleFields) {
+    public void setAttackbleFields(ArrayList<Attack> attackbleFields) {
         this.attackbleFields = attackbleFields;
     }
 
     /**
      * @return all fields that can be moved to
      */
-    public ArrayList<Point> getAvailableMoves() {
+    public ArrayList<SingleMove> getAvailableMoves() {
         return availableMoves;
     }
 
-    public void setAvailableMoves(ArrayList<Point> availableMoves) {
+    public void setAvailableMoves(ArrayList<SingleMove> availableMoves) {
         this.availableMoves = availableMoves;
     }
 
@@ -58,14 +61,14 @@ public class MoveData {
     public ArrayList<Point> getSpecialFields() {
         ArrayList<Point> out = new ArrayList<>();
         for (int i = 0; i < specialMoves.size(); i++)
-            out.add(specialMoves.get(i).getHighlightPoint());
+            out.add(specialMoves.get(i).getHighlight());
         return out;
     }
 
     public SpecialMove getSpecialMove(Point field) {
         for (int i = 0; i < specialMoves.size(); i++) {
             SpecialMove specialMove = specialMoves.get(i);
-            if (specialMove.getHighlightPoint().equals(field))
+            if (specialMove.getHighlight().equals(field))
                 return specialMove;
         }
         return null;
@@ -78,19 +81,19 @@ public class MoveData {
     /**
      * adds a field to the set of fields considered to be movable to
      *
-     * @param point field coordinates as Points
+     * @param move add move to available moves
      */
-    public void addMoveable(Point point) {
-        availableMoves.add(point);
+    public void addMoveable(SingleMove move) {
+        availableMoves.add(move);
     }
 
     /**
      * adds a field to the set of fields considered to be attackble
      *
-     * @param point field coordinates as Points
+     * @param attack add attack to available attacks
      */
-    public void addAttackable(Point point) {
-        attackbleFields.add(point);
+    public void addAttackable(Attack attack) {
+        attackbleFields.add(attack);
     }
 
     /**
@@ -121,24 +124,29 @@ public class MoveData {
      */
     public MoveData intersection(MoveData md) {
         MoveData out = new MoveData();
-        ArrayList<Point> av1 = out.getAvailableMoves();
-        ArrayList<Point> at1 = out.getAttackbleFields();
-        ArrayList<Point> av2 = out.getAvailableMoves();
-        ArrayList<Point> at2 = out.getAttackbleFields();
+        ArrayList<SingleMove> av1 = out.getAvailableMoves();
+        ArrayList<Attack> at1 = out.getAttacks();
+        ArrayList<SingleMove> av2 = out.getAvailableMoves();
+        ArrayList<Attack> at2 = out.getAttacks();
 
         for (int i = 0; i < av1.size(); i++) {
-            Point p = av1.get(i);
-            if (av2.contains(p))
-                out.addMoveable(p);
+            SingleMove move = av1.get(i);
+            if (av2.contains(move))
+                out.addMoveable(move);
         }
         for (int i = 0; i < at1.size(); i++) {
-            Point p = at1.get(i);
-            if (at2.contains(p))
-                out.addAttackable(p);
+            Attack attack = at1.get(i);
+            if (at2.contains(attack))
+                out.addAttackable(attack);
         }
         return out;
     }
 
+    /**
+     * creates the intersection of one MoveData object and a list of points
+     *
+     * @param list_of_av
+     */
     public void intersection(ArrayList<Point> list_of_av) {
         if (list_of_av == null)
             return;
@@ -148,16 +156,16 @@ public class MoveData {
             return;
         }
         for (int i = 0; i < availableMoves.size(); i++) {
-            Point p = availableMoves.get(i);
-            if (!list_of_av.contains(p)) {
-                availableMoves.remove(p);
+            Move move = availableMoves.get(i);
+            if (!list_of_av.contains(move)) {
+                availableMoves.remove(move);
                 i--;
             }
         }
         for (int i = 0; i < attackbleFields.size(); i++) {
-            Point p = attackbleFields.get(i);
-            if (!list_of_av.contains(p)) {
-                attackbleFields.remove(p);
+            Attack attack = attackbleFields.get(i);
+            if (!list_of_av.contains(attack)) {
+                attackbleFields.remove(attack);
                 i--;
             }
         }
@@ -174,8 +182,8 @@ public class MoveData {
         MoveData out = new MoveData();
         Util.addWithoutDuplicates(out.getAvailableMoves(), o1.getAvailableMoves());
         Util.addWithoutDuplicates(out.getAvailableMoves(), o2.getAvailableMoves());
-        Util.addWithoutDuplicates(out.getAttackbleFields(), o1.getAttackbleFields());
-        Util.addWithoutDuplicates(out.getAttackbleFields(), o2.getAttackbleFields());
+        Util.addWithoutDuplicates(out.getAttacks(), o1.getAttacks());
+        Util.addWithoutDuplicates(out.getAttacks(), o2.getAttacks());
         return out;
     }
 
@@ -187,7 +195,7 @@ public class MoveData {
      */
     public void unifyWithoutCopy(MoveData collector, MoveData source) {
         Util.addWithoutDuplicates(collector.getAvailableMoves(), source.getAvailableMoves());
-        Util.addWithoutDuplicates(collector.getAttackbleFields(), source.getAttackbleFields());
+        Util.addWithoutDuplicates(collector.getAttacks(), source.getAttacks());
     }
 
     /**
@@ -219,11 +227,9 @@ public class MoveData {
      * @param points
      */
     public void subtract(ArrayList<Point> points) {
-        for (int i = 0; i < points.size(); i++) {
-            Point point = points.get(i);
-            availableMoves.remove(point);
-            attackbleFields.remove(point);
-        }
+        Util.subtract(availableMoves, points);
+        Util.subtract(attackbleFields, points);
+        Util.subtract(specialMoves, points);
     }
 
 }

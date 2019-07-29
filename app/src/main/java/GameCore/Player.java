@@ -81,6 +81,9 @@ public abstract class Player {
         return threatened;
     }
 
+    /**
+     * @return true if player has moves left
+     */
     public boolean canMove(){
         return moves;
     }
@@ -93,7 +96,7 @@ public abstract class Player {
         return player1;
     }
 
-    public void update(Field field) {
+    public void update() {
         for (Figure f : figures) {
             f.updateMoveData();
             if(f.getMd().hasMoves())

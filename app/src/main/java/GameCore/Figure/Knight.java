@@ -4,17 +4,19 @@ import com.example.chess.R;
 
 import GameCore.Game;
 import GameCore.MoveData;
-import GameCore.Movement.Jump;
+import GameCore.Movement.MoveEval.PotentialMove;
+import GameCore.Movement.MovementDescriber.Jump;
+import GameCore.Movement.MovementDescriber.MovementCategory;
 import GameCore.Player;
 
-import static GameCore.Movement.Jump.DDL;
-import static GameCore.Movement.Jump.DDR;
-import static GameCore.Movement.Jump.DLL;
-import static GameCore.Movement.Jump.DRR;
-import static GameCore.Movement.Jump.ULL;
-import static GameCore.Movement.Jump.URR;
-import static GameCore.Movement.Jump.UUL;
-import static GameCore.Movement.Jump.UUR;
+import static GameCore.Movement.MovementDescriber.Jump.DDL;
+import static GameCore.Movement.MovementDescriber.Jump.DDR;
+import static GameCore.Movement.MovementDescriber.Jump.DLL;
+import static GameCore.Movement.MovementDescriber.Jump.DRR;
+import static GameCore.Movement.MovementDescriber.Jump.ULL;
+import static GameCore.Movement.MovementDescriber.Jump.URR;
+import static GameCore.Movement.MovementDescriber.Jump.UUL;
+import static GameCore.Movement.MovementDescriber.Jump.UUR;
 
 public class Knight extends Figure{
     private Jump[] moves = {UUL, UUR, ULL, URR, DLL, DRR, DDL, DDR};
@@ -26,14 +28,16 @@ public class Knight extends Figure{
     public Knight(Player owner, Integer x, Integer y, Game game) {
         super(owner, x, y, game);
         image = owner.player1() ? R.drawable.horsewhite : R.drawable.horseblack;
-
+        for (MovementCategory jump : moves) {
+            standardMoves.add(new PotentialMove(jump, 1, 0, true, true));
+        }
     }
 
     @Override
     public void updateMoveData() {
         MoveData md = getMd();
         md.reset();
-        jumpMoves(moves);
+        game.getMoveEvaluator().evalMoves(this);
         if (isRestricted()) {
             md.intersection(getRestrictions());
         }
