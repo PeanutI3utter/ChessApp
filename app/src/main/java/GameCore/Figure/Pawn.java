@@ -264,8 +264,14 @@ public class Pawn extends Figure {
                 Point point = new Point(x - 1, why);
                 Figure fig = field.getFigure(x - 1, why);
                 if (!(fig == null))
-                    if (fig.getOwner() != getOwner())
+                    if (fig.getOwner() != getOwner()) {
+                        if (fig == enemyKing) {
+                            enemyKing.getOwner().setThreatened(true);
+                            enemyKing.addThreatendBy(this);
+                            enemyKing.setRestrictions(this.getPos());
+                        }
                         getMd().getAttacks().add(new Attack(this, fig, point));
+                    }
                 if (enemyKing.isInVicinity(x - 1, why)) {
                     enemyKing.addBlackList(point);
                 }

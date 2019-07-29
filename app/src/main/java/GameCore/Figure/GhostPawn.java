@@ -12,11 +12,20 @@ public class GhostPawn extends Figure {
         this.master = master;
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Override
     public void updateMoveData() {
-        return;
     }
 
+
+    @Override
+    public void delete() {
+        if (game.getField().getFigure(pos.x, pos.y) == this) {
+            super.delete();
+        } else {
+            getOwner().getFigures().remove(this);
+        }
+    }
 
     @Override
     public void onAttack() {

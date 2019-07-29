@@ -3,6 +3,7 @@ package GameCore.Mechanisms;
 import android.graphics.Point;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import GameCore.Field;
 import GameCore.Figure.Figure;
@@ -71,12 +72,12 @@ public class MoveEvaluator {
                 if (checkingFigure == null || checkingFigure instanceof GhostPawn) {
                     if (isMove && numOfFiguresInPath < jumpLimit) {
                         av.add(new SingleMove(figure, checkingPoint));
-                        if (Figure.isInVicinity(ex, why, kingX, kingY))
-                            enemyKing.addBlackList(checkingPoint);
+                        enemyKing.addBlackList(checkingPoint);
                     }
                 } else if (figure.getOwner() == checkingFigure.getOwner()) {
-                    if (Figure.isInVicinity(ex, why, kingX, kingY) && numOfFiguresInPath < jumpLimit)
+                    if (numOfFiguresInPath < jumpLimit) {
                         enemyKing.addBlackList(checkingPoint);
+                    }
                     numOfAlliesInPath++;
                 } else if (checkingFigure instanceof King) {
                     if (isAttack) {
@@ -139,6 +140,7 @@ public class MoveEvaluator {
      * @param movements movements a figure is able to execute
      * @deprecated
      */
+    @SuppressWarnings("ConstantConditions")
     public void hybridMove(Figure figure, int range, MovementCategory... movements) {
         MoveData md = figure.getMd();
         ArrayList<SingleMove> av = md.getAvailableMoves();
@@ -150,7 +152,6 @@ public class MoveEvaluator {
         int range0 = range;
         int why;
         int ex;
-        dir:
         for (MovementCategory movement : movements) {
             ArrayList<Point> points = new ArrayList<>();
             Figure enemyInPath = null;
@@ -275,6 +276,7 @@ public class MoveEvaluator {
      * @apiNote modified lineMove() method, can evaluate all moves including jumps now
      * @deprecated
      */
+    @SuppressWarnings("StatementWithEmptyBody")
     public void moves(Figure figure, PotentialMove... potentialMoves) {
         MoveData md = figure.getMd();
         ArrayList<SingleMove> av = md.getAvailableMoves();
@@ -283,7 +285,6 @@ public class MoveEvaluator {
         King enemyKing = enemy.getKing();
         int kingX = enemyKing.getX();
         int kingY = enemyKing.getY();
-        dir:
         for (PotentialMove potentialMove : potentialMoves) {
             MovementCategory m = potentialMove.getMc();
             ArrayList<Point> points = new ArrayList<>();
@@ -330,7 +331,7 @@ public class MoveEvaluator {
                         at.add(new Attack(figure, fig, point));
                     } else {
                         points.add(new Point(figure.getX(), figure.getY()));
-                        enemyInPath.setRestricted(true);
+                        Objects.requireNonNull(enemyInPath).setRestricted(true);
                         enemyInPath.setRestrictions(points);
                         break;
                     }

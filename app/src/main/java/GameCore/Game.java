@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.chess.R;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import GameCore.Figure.Bishop;
 import GameCore.Figure.Figure;
@@ -66,12 +67,13 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     protected Figure getSelected = null;
 
 
+    @SuppressWarnings("CatchMayIgnoreException")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_in_game);
         try {
-            this.getSupportActionBar().hide();
+            Objects.requireNonNull(this.getSupportActionBar()).hide();
         } catch (NullPointerException e) {
 
         }
@@ -380,6 +382,7 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     }
 
 
+    @SuppressWarnings("EmptyMethod")
     public void gameDraw(){
 
     }

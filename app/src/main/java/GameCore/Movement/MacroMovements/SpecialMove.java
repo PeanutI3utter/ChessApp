@@ -19,7 +19,7 @@ public abstract class SpecialMove extends Move {
     private LinkedList<Movements> movements;
 
     public SpecialMove() {
-        movements = new LinkedList<Movements>();
+        movements = new LinkedList<>();
         involvedFigures = new LinkedList<>();
     }
 

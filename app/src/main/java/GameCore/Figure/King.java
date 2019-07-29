@@ -45,13 +45,13 @@ public class King extends Figure {
             boolean proceed = true;
             if (rook2.hasMoved())
                 proceed = false;
-            ArrayList<Point> restrictions = king.getRestrictions();
+            ArrayList<Point> blacklist = king.getBlackList();
             for (int i = 1; i < 4; i++) {
                 if (field.getFigure(i, kingheight) != null)
                     proceed = false;
             }
-            if (restrictions != null) {
-                if (restrictions.contains(new Point(2, kingheight)))
+            if (blacklist != null) {
+                if (blacklist.contains(new Point(2, kingheight)))
                     proceed = false;
             }
             if (proceed) {
@@ -66,13 +66,13 @@ public class King extends Figure {
             boolean proceed = true;
             if (rook1.hasMoved())
                 proceed = false;
-            ArrayList<Point> restrictions = king.getRestrictions();
+            ArrayList<Point> blacklist = king.getBlackList();
             for (int i = 5; i < 7; i++) {
                 if (field.getFigure(i, kingheight) != null)
                     proceed = false;
             }
-            if (restrictions != null) {
-                if (restrictions.contains(new Point(6, kingheight)))
+            if (blacklist != null) {
+                if (blacklist.contains(new Point(6, kingheight)))
                     proceed = false;
             }
             if (proceed) {
@@ -145,9 +145,12 @@ public class King extends Figure {
     }
 
     public void addBlackList(Point point){
-        blackList.add(point);
+        Util.addWithoutDuplicates(blackList, point);
     }
 
+    public ArrayList<Point> getBlackList() {
+        return blackList;
+    }
 
     public void addThreatendBy(Figure threatendBy) {
         Util.addWithoutDuplicates(this.threatendBy, threatendBy);

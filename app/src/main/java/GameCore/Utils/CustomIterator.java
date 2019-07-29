@@ -8,9 +8,9 @@ import java.util.List;
  * @param <T>
  */
 public class CustomIterator<T> {
-    List<? extends T> list;
-    T singleItem;
-    boolean singleElement;
+    private List<? extends T> list;
+    private T singleItem;
+    private boolean singleElement;
 
 
     public CustomIterator(List<? extends T> list) {

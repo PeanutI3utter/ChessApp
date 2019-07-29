@@ -19,7 +19,6 @@ import static GameCore.Movement.MovementDescriber.Jump.UUL;
 import static GameCore.Movement.MovementDescriber.Jump.UUR;
 
 public class Knight extends Figure{
-    private Jump[] moves = {UUL, UUR, ULL, URR, DLL, DRR, DDL, DDR};
 
     public Knight(){
         super();
@@ -28,6 +27,7 @@ public class Knight extends Figure{
     public Knight(Player owner, Integer x, Integer y, Game game) {
         super(owner, x, y, game);
         image = owner.player1() ? R.drawable.horsewhite : R.drawable.horseblack;
+        Jump[] moves = {UUL, UUR, ULL, URR, DLL, DRR, DDL, DDR};
         for (MovementCategory jump : moves) {
             standardMoves.add(new PotentialMove(jump, 1, 0, true, true));
         }

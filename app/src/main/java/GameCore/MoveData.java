@@ -20,7 +20,7 @@ public class MoveData {
     private ArrayList<SpecialMove> specialMoves;
 
     public MoveData() {
-        availableMoves = new ArrayList<SingleMove>();
+        availableMoves = new ArrayList<>();
         attackbleFields = new ArrayList<>();
         specialMoves = new ArrayList<>();
     }
@@ -147,6 +147,7 @@ public class MoveData {
      *
      * @param list_of_av
      */
+    @SuppressWarnings("SuspiciousMethodCalls")
     public void intersection(ArrayList<Point> list_of_av) {
         if (list_of_av == null)
             return;
@@ -229,7 +230,6 @@ public class MoveData {
     public void subtract(ArrayList<Point> points) {
         Util.subtract(availableMoves, points);
         Util.subtract(attackbleFields, points);
-        Util.subtract(specialMoves, points);
     }
 
 }

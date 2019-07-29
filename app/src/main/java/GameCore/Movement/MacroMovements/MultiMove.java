@@ -60,7 +60,7 @@ public class MultiMove extends SpecialMove {
 
     @Override
     public CustomIterator<Movements> getIterator() {
-        return new CustomIterator<Movements>(movements);
+        return new CustomIterator<>(movements);
     }
 
     @Override

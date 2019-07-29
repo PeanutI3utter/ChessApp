@@ -24,6 +24,7 @@ import static GameCore.Movement.MovementDescriber.Direction.UP;
 /**
  * abstract model of a figure in chess
  */
+@SuppressWarnings("ConstantConditions")
 public abstract class Figure {
     protected Point pos;
     int image;
@@ -324,6 +325,7 @@ public abstract class Figure {
             for (int i = 1; pos.y + i * dir >= 0 && pos.y + i * dir < 8 && range > 0; i++) {
                 int why = pos.y + i * dir;
                 Figure fig = field.getFigure(pos.x, why);
+                //noinspection StatementWithEmptyBody
                 if(fig == null || fig instanceof  GhostPawn)
                     //available.add(new Point(pos.x, why))
                     ;
@@ -355,7 +357,6 @@ public abstract class Figure {
         int kingX = enemyKing.getX();
         int kingY = enemyKing.getY();
         int range0 = range;
-        dir:
         for (MovementCategory movement : movements) {
             ArrayList<Point> points = new ArrayList<>();
             Figure enemyInPath = null;
@@ -374,7 +375,7 @@ public abstract class Figure {
                 if (checkingFig == null || checkingFig instanceof GhostPawn) {
                     av.add(new SingleMove(this, point));
                     continue;
-                }else if (checkingFig.getOwner() != getOwner()) {
+                } else if (checkingFig.getOwner() != getOwner()) {
                     if (checkingFig instanceof King) {
                         enemy.setThreatened(true);
                         enemyKing.setRestrictions(point);
@@ -399,7 +400,7 @@ public abstract class Figure {
                         continue;
                     }
                     av.add(new SingleMove(this, point));
-                    if (isInVicinity(ex, why, kingX, kingY) & numOfEnemiesInPath < 1)
+                    if (isInVicinity(ex, why, kingX, kingY) && numOfEnemiesInPath < 1)
                         enemyKing.addBlackList(point);
                 } else if (fig.getOwner() == getOwner()) {
                     if (isInVicinity(ex, why, kingX, kingY) && numOfEnemiesInPath < 1) {
@@ -448,7 +449,6 @@ public abstract class Figure {
         int kingX = enemyKing.getX();
         int kingY = enemyKing.getY();
         int range0 = range;
-        dir:
         for (Direction d : directions) {
             ArrayList<Point> points = new ArrayList<>();
             Figure enemyInPath = null;
@@ -553,12 +553,5 @@ public abstract class Figure {
         return Math.abs((double) pos.x - x) <= 1 && Math.abs((double) pos.y - y) <= 1;
     }
 
-    /**
-     * method for onClickEvent, handles onClickEvent for selected(this) figure
-     *
-     * @param figure       clicked Figure
-     * @param clickedPoint clicked point
-     * @return 0 if a move or attack was successful/ 1 if clicked figure cannot be selected/ 2 if click was a reselection
-     */
 
 }

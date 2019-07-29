@@ -208,29 +208,29 @@ public class Board extends View {
         private int color;
         private FieldState state;
 
-        public Field(int x, int y, int color){
+        Field(int x, int y, int color) {
             this.x = x;
             this.y = y;
             this.color = color;
         }
 
-        public void setState(FieldState state) {
-            this.state = state;
-        }
-
-        public int getX() {
+        int getX() {
             return x;
         }
 
-        public int getY() {
+        int getY() {
             return y;
         }
 
-        public FieldState getState() {
+        FieldState getState() {
             return state;
         }
 
-        public int getColor() {
+        void setState(FieldState state) {
+            this.state = state;
+        }
+
+        int getColor() {
             return color;
         }
     }

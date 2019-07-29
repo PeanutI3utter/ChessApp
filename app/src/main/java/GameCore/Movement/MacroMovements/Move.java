@@ -66,5 +66,6 @@ public abstract class Move {
     }
 
 
+    @SuppressWarnings("EmptyMethod")
     abstract public void modifyGame(Game game);
 }

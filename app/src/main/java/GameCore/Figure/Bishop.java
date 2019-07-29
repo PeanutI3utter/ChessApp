@@ -15,7 +15,7 @@ import static GameCore.Movement.MovementDescriber.Direction.UPRIGHT;
 
 
 public class Bishop extends Figure{
-    Direction[] directions = {UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT};
+    private Direction[] directions = {UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT};
 
     public Bishop(Player owner, Integer x, Integer y, Game game) {
         super(owner, x, y, game);
