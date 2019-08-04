@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import GameCore.GameModes.NormalGame;
 import GameCore.Graphics.Board;
 
-public class MainActivity extends AppCompatActivity {
+public class MainMenu extends AppCompatActivity {
     ImageView iv;
     Board board;
     Canvas canvas;
@@ -26,6 +26,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        findViewById(R.id.newgame).setOnClickListener(view -> {
+            Intent i = new Intent(MainMenu.this, NormalGame.class);
+            i.putExtra("load", false);
+            startActivity(i);
+        });
+        findViewById(R.id.loadgame).setOnClickListener(view ->{
+            Intent i = new Intent(MainMenu.this, NormalGame.class);
+            i.putExtra("load", true);
+            i.putExtra("loadFile", "Player 1 vs Player 2");
+            startActivity(i);
+        });
         /*
         w = 400;
         h = 400;
@@ -43,24 +54,13 @@ public class MainActivity extends AppCompatActivity {
         canvas.drawRect(rect,paint);
         */
 
-
-        Intent i = new Intent(MainActivity.this, NormalGame.class);
+        /*
+        Intent i = new Intent(MainMenu.this, NormalGame.class);
+        i.putExtra("load", true);
+        i.putExtra("loadFile", "Player 1 vs Player 2");
         startActivity(i);
-
+        */
     }
 
-    public void draw(){
-        board.drawBoard();
-    }
 
-    public void initBoard(){
-        board = new Board(this);
-        board.setCanvas(canvas);
-        board.setDarkBrown(getColor(R.color.boarddarkbrown));
-        board.setLightBrown(getColor(R.color.boardlightbrown));
-        board.setSelected(getDrawable(R.drawable.gradientwhite));
-        board.setMoveable(getDrawable(R.drawable.gradientblue));
-        board.setAttackable(getDrawable(R.drawable.gradientred));
-        board.initBoard();
-    }
 }
