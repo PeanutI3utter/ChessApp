@@ -60,14 +60,18 @@ public class Recorder {
 
 
     public void onNextTurn() {
-        if (pointer > 0) {
-            records = new LinkedList<>(records.subList(pointer, records.size()));
-            pointer = 0;
-        }
+        cut();
         if (buffer.length() > 0)
             records.addFirst(buffer);
         buffer = "";
 
+    }
+
+    public void cut() {
+        if (pointer > 0) {
+            records = new LinkedList<>(records.subList(pointer, records.size()));
+            pointer = 0;
+        }
     }
 
     public String compress(Movements micromovement) {

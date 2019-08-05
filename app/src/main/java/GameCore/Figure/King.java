@@ -56,8 +56,8 @@ public class King extends Figure {
             }
             if (proceed) {
                 MultiMove mm = new MultiMove();
-                mm.addMovement(king, 2, LEFT);
-                mm.addMovement(rook2, 3, RIGHT);
+                mm.addMovement(king, new Point(2, kingheight));
+                mm.addMovement(rook2, new Point(3, kingheight));
                 mm.setHighlight(new Point(2, kingheight));
                 specialMoves.add(mm);
             }
@@ -77,8 +77,8 @@ public class King extends Figure {
             }
             if (proceed) {
                 MultiMove mm = new MultiMove();
-                mm.addMovement(king, 2, RIGHT);
-                mm.addMovement(rook1, 2, LEFT);
+                mm.addMovement(king, new Point(6, kingheight));
+                mm.addMovement(rook1, new Point(5, kingheight));
                 mm.setHighlight(new Point(6, kingheight));
                 specialMoves.add(mm);
             }

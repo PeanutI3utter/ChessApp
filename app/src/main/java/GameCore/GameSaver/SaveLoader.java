@@ -44,7 +44,7 @@ public class SaveLoader {
     public String buildSaveString() {
         Field field = game.getField();
         Point size = field.getSize();
-        game.getRecorder().onNextTurn();
+        game.getRecorder().cut();
         String out = field.getSize().x + "," + game.getCurrentPlayer().getName() + ";"
                 + game.getPlayer1().getName() + "," + game.getPlayer1().getClassName() + ";"
                 + game.getPlayer2().getName() + "," + game.getPlayer2().getClassName() + ";"
