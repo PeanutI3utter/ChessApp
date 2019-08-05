@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/gamebackground"
-    tools:context="GameCore.Game">
+    tools:context="Activities.Game">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -996,10 +996,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/ripple"
-            android:drawableTop="@drawable/queenwhite"
+            android:drawableTop="@drawable/kingwhite"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintRight_toLeftOf="@id/newgame"
+            app:layout_constraintRight_toLeftOf="@id/redo"
             android:text="Revert" />
 
         <Button
@@ -1009,23 +1009,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@android:style/Widget.Material.Button.Borderless"
-            android:drawableTop="@drawable/pawnwhite"
+            android:drawableTop="@drawable/queenwhite"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toRightOf="@id/revert"
-            app:layout_constraintRight_toLeftOf="@id/expanded_menu"
+            app:layout_constraintLeft_toRightOf="@id/redo"
+            app:layout_constraintRight_toLeftOf="@id/save_and_export"
             />
 
         <Button
-            android:id="@+id/expanded_menu"
+            android:id="@+id/redo"
             style="@android:style/Widget.Material.Button.Borderless"
-            android:text="Menu"
+            android:drawableTop="@drawable/pawnwhite"
             android:background="@drawable/ripple"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableTop="@drawable/kingwhite"
+            android:text="redo"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toRightOf="@id/newgame"
-            app:layout_constraintRight_toLeftOf="@id/save_and_export"
+            app:layout_constraintLeft_toRightOf="@id/revert"
+            app:layout_constraintRight_toLeftOf="@id/newgame"
             />
 
         <Button
@@ -1035,9 +1035,9 @@
             android:background="@drawable/ripple"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableTop="@drawable/pawnwhite"
+            android:drawableTop="@drawable/rookwhite"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintLeft_toRightOf="@id/expanded_menu"
+            app:layout_constraintLeft_toRightOf="@id/newgame"
             app:layout_constraintRight_toRightOf="parent"
             android:layout_gravity="left"
             />

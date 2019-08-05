@@ -2,12 +2,12 @@ package GameCore.Figure;
 
 import com.example.chess.R;
 
-import GameCore.Game;
+import Activities.Game;
 import GameCore.MoveData;
 import GameCore.Movement.MoveEval.PotentialMove;
 import GameCore.Movement.MovementDescriber.Jump;
 import GameCore.Movement.MovementDescriber.MovementCategory;
-import GameCore.Player;
+import GameCore.PlayerTypes.Player;
 
 import static GameCore.Movement.MovementDescriber.Jump.DDL;
 import static GameCore.Movement.MovementDescriber.Jump.DDR;
@@ -19,10 +19,6 @@ import static GameCore.Movement.MovementDescriber.Jump.UUL;
 import static GameCore.Movement.MovementDescriber.Jump.UUR;
 
 public class Knight extends Figure{
-
-    public Knight(){
-        super();
-    }
 
     public Knight(Player owner, Integer x, Integer y, Game game) {
         super(owner, x, y, game);

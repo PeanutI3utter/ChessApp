@@ -2,11 +2,11 @@ package GameCore.Figure;
 
 import com.example.chess.R;
 
-import GameCore.Game;
+import Activities.Game;
 import GameCore.MoveData;
 import GameCore.Movement.MoveEval.PotentialMove;
 import GameCore.Movement.MovementDescriber.Direction;
-import GameCore.Player;
+import GameCore.PlayerTypes.Player;
 
 import static GameCore.Movement.MovementDescriber.Direction.DOWN;
 import static GameCore.Movement.MovementDescriber.Direction.LEFT;

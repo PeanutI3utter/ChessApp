@@ -1,5 +1,7 @@
 package GameCore;
 
+import GameCore.PlayerTypes.Player;
+
 /**
  *
  */
@@ -20,6 +22,10 @@ public class PlayerQueue {
         next = nextAfter;
         nextAfter = ret;
         return ret;
+    }
+
+    public Player peak() {
+        return next;
     }
 
     /*

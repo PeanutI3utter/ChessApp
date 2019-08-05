@@ -1,4 +1,4 @@
-package GameCore;
+package Activities;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -15,10 +15,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chess.R;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
-
+import GameCore.Exceptions.ParsingError;
+import GameCore.Field;
 import GameCore.Figure.Figure;
 import GameCore.GameSaver.SaveLoader;
 import GameCore.Graphics.Board;
@@ -26,8 +29,11 @@ import GameCore.Graphics.SelectView;
 import GameCore.Mechanisms.InputHandler;
 import GameCore.Mechanisms.MoveEvaluator;
 import GameCore.Mechanisms.MoveProcessor;
+import GameCore.PlayerQueue;
 import GameCore.PlayerTypes.Human;
 import GameCore.PlayerTypes.Player;
+import GameCore.Recorder;
+import GameCore.SelectButton;
 
 
 public abstract class Game extends AppCompatActivity implements View.OnClickListener {
@@ -48,6 +54,7 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     protected boolean gameOnGoing;
     protected SaveLoader sl;
     protected String name;
+    protected Recorder recorder;
 
     //graphics variables
     protected Canvas canvas;
@@ -60,6 +67,8 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     protected TextView player2Name;
     protected SelectView selector;
     protected Button newGame;
+    protected Button rewindButton;
+    protected Button redoButton;
 
     protected boolean selectorOpen = false;
 
@@ -79,7 +88,17 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
 
         if(getIntent().getExtras().getBoolean("load")) {
             name = getIntent().getExtras().getString("loadFile");
-            load(name);
+            try {
+                load(name);
+            } catch (ParsingError parsingError) {
+                Toast parsingerror = Toast.makeText(Game.this, parsingError.getMessage(), Toast.LENGTH_SHORT);
+                parsingerror.show();
+                newGame();
+            } catch (IOException e) {
+                Toast error = Toast.makeText(Game.this, e.getMessage(), Toast.LENGTH_SHORT);
+                error.show();
+                newGame();
+            }
         }
         else
             newGame();
@@ -103,8 +122,7 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         loadFigures();
 
 
-
-        nextTurn();
+        onNextTurn();
         draw();
     }
 
@@ -126,7 +144,7 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         initBoard();
 
         sl = new SaveLoader(this);
-
+         recorder = new Recorder(this);
 
 
         //get all field buttons
@@ -205,6 +223,18 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         newGame = findViewById(R.id.newgame);
         newGame.setOnClickListener(view -> newGame());
         findViewById(R.id.save_and_export).setOnClickListener(view -> save());
+        rewindButton = findViewById(R.id.revert);
+        rewindButton.setOnClickListener(view -> {
+            if (recorder.canRewind())
+                recorder.rewind(1);
+            draw();
+        });
+        redoButton = findViewById(R.id.redo);
+        redoButton.setOnClickListener(view -> {
+            if (recorder.canUndoRewind())
+                recorder.undoRewind(1);
+            draw();
+        });
     }
 
 
@@ -307,6 +337,10 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     }
 
 
+    public void figureCreated(Figure figure) {
+        recorder.onCreate(figure);
+    }
+
     @SuppressWarnings("EmptyMethod")
     public void gameDraw(){
 
@@ -316,7 +350,7 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     /**
      * moves the game to next turn
      */
-    public void nextTurn() {
+    public void onNextTurn() {
         resetSelected();
         Player oldplayer = currentPlayer;
         currentPlayer = queue.next();
@@ -339,7 +373,22 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         if (currentPlayer.isThreatened())
             board.highlightAttack(currentPlayer.getKing());
         selector.update(currentPlayer);
+        if (recorder.canRewind()) {
+            rewindButton.setEnabled(true);
+        } else {
+            rewindButton.setEnabled(false);
+        }
+        if (recorder.canUndoRewind()) {
+            redoButton.setEnabled(true);
+        } else {
+            redoButton.setEnabled(false);
+        }
         currentTurn++;
+    }
+
+    public void nextTurn() {
+        recorder.onNextTurn();
+        onNextTurn();
     }
 
     // highlight all available moves for selected figure
@@ -399,7 +448,7 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    public void load(String path){
+    public void load(String path) throws ParsingError, IOException {
         boolean success;
         initBasis();
         success = sl.load(getApplicationContext(), path);
@@ -409,8 +458,8 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
             newGame();
         }
         initBasicComponents();
-        nextTurn(); // syncing queue
-        nextTurn(); // next turn for updating move data and detecting win/loss/draw
+        onNextTurn(); // syncing queue
+        onNextTurn(); // next turn for updating move data and detecting win/loss/draw
         draw();
     }
 
@@ -490,9 +539,17 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         this.name = name;
     }
 
+    public Recorder getRecorder() {
+        return recorder;
+    }
+
+    public void setRecorder(Recorder recorder) {
+        this.recorder = recorder;
+    }
+
     /*
-                returns current field
-             */
+                        returns current field
+                     */
     public Field getField() {
         return figureField;
     }

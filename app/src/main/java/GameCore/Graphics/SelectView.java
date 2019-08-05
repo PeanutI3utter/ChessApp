@@ -10,7 +10,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.chess.R;
 
-import GameCore.Player;
+import GameCore.PlayerTypes.Player;
 
 /**
  * prototype not in use

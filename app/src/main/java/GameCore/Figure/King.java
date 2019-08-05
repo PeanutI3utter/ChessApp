@@ -6,15 +6,15 @@ import com.example.chess.R;
 
 import java.util.ArrayList;
 
+import Activities.Game;
 import GameCore.Field;
-import GameCore.Game;
 import GameCore.MoveData;
 import GameCore.Movement.MacroMovements.MultiMove;
 import GameCore.Movement.MacroMovements.SpecialMove;
 import GameCore.Movement.MoveEval.PotentialMove;
 import GameCore.Movement.MovementDescriber.Direction;
 import GameCore.Movement.MovementDescriber.SpecialMoveEval;
-import GameCore.Player;
+import GameCore.PlayerTypes.Player;
 import GameCore.Utils.Util;
 
 import static GameCore.Movement.MovementDescriber.Direction.DOWN;

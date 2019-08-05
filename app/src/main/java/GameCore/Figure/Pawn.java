@@ -5,21 +5,23 @@ import android.graphics.Point;
 import com.example.chess.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import Activities.Game;
 import GameCore.Field;
-import GameCore.Game;
 import GameCore.MoveData;
 import GameCore.Movement.MacroMovements.Attack;
+import GameCore.Movement.MacroMovements.Move;
 import GameCore.Movement.MacroMovements.SingleMove;
 import GameCore.Movement.MacroMovements.SpecialMove;
 import GameCore.Movement.MoveEval.PotentialMove;
 import GameCore.Movement.MovementDescriber.Direction;
 import GameCore.Movement.MovementDescriber.MovementCategory;
 import GameCore.Movement.MovementDescriber.SpecialMoveEval;
-import GameCore.Player;
+import GameCore.PlayerTypes.Player;
 
-public class Pawn extends Figure {
-    private GhostPawn clone;
+public class Pawn extends Ghostable {
+    private Ghost clone;
     private Direction direction;
     private Direction[] attacks;
     private SpecialMoveEval pawnSpecialMove1 = ((game, figure) -> {
@@ -50,9 +52,14 @@ public class Pawn extends Figure {
                         Pawn mainFig = (Pawn) getInvolvedFigures().get(0);
                         GhostPawn ghost = new GhostPawn(mainFig.getOwner(), mainFig.getX(), mainFig.getY() - mainFig.getDirection().getY(), mainFig, game);
                         game.getField().setField(ghost, ghost.getX(), ghost.getY());
-                        mainFig.setClone(ghost);
+                        game.figureCreated(ghost);
                     }
 
+
+                    @Override
+                    public List<Point> getMoveToFields() {
+                        return null;
+                    }
 
                     @Override
                     public void modifyGame(Game game) {
@@ -71,24 +78,58 @@ public class Pawn extends Figure {
         Pawn pawn = (Pawn) figure;
         int pawnYf = pawn.getY() + pawn.getDirection().getY();
         ArrayList<SpecialMove> specialMoves = new ArrayList<>();
-        if (pawnYf == 7 || pawnYf == 0) {
-            SpecialMove specialMove = new SpecialMove() {
+        for (Attack attack : getMd().getAttacks()) {
+            for (Point point : attack.getMoveToFields())
+                if (point.y == 7 || point.y == 0) {
+                    SpecialMove specialMove = new SpecialMove() {
 
-                @Override
-                public void modifyGame(Game game) {
+                        @Override
+                        public List<Point> getMoveToFields() {
+                            return null;
+                        }
 
+                        @Override
+                        public void modifyGame(Game game) {
+
+                        }
+
+                        @Override
+                        public void specialMove(Game game) {
+
+                        }
+                    };
+                    specialMove.addMovement(attack.getIterator().getNext());
+                    specialMove.setOpenSelector(true);
+                    specialMoves.add(specialMove);
                 }
-
-                @Override
-                public void specialMove(Game game) {
-
-                }
-            };
-            specialMove.addMovement(figure, new Point(figure.getX(), pawnYf));
-            specialMove.setOpenSelector(true);
-            specialMoves.add(specialMove);
-            return specialMoves;
         }
+        for (Move move : getMd().getAvailableMoves()) {
+            for (Point point : move.getMoveToFields())
+                if (point.y == 7 || point.y == 0) {
+                    SpecialMove specialMove = new SpecialMove() {
+
+                        @Override
+                        public List<Point> getMoveToFields() {
+                            return null;
+                        }
+
+                        @Override
+                        public void modifyGame(Game game) {
+
+                        }
+
+                        @Override
+                        public void specialMove(Game game) {
+
+                        }
+                    };
+                    specialMove.addMovement(move.getIterator().getNext());
+                    specialMove.setOpenSelector(true);
+                    specialMoves.add(specialMove);
+                }
+        }
+        if (specialMoves.size() > 0)
+            return specialMoves;
         return null;
     }));
 
@@ -115,8 +156,6 @@ public class Pawn extends Figure {
      */
     @Override
     public void move(int x, int y) {
-        if (clone != null)
-            clone.delete();
         super.move(x, y);
 
     }
@@ -173,7 +212,7 @@ public class Pawn extends Figure {
     }
 
     public GhostPawn getClone() {
-        return clone;
+        return (GhostPawn) clone;
     }
 
     public void exchange(Figure figure){
@@ -290,4 +329,8 @@ public class Pawn extends Figure {
         super.delete();
     }
 
+    @Override
+    public void setGhost(Ghost ghost) {
+        this.clone = ghost;
+    }
 }

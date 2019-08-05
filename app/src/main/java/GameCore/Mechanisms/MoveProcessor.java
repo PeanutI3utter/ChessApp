@@ -1,6 +1,6 @@
 package GameCore.Mechanisms;
 
-import GameCore.Game;
+import Activities.Game;
 import GameCore.Movement.MacroMovements.Move;
 import GameCore.Movement.MacroMovements.SpecialMove;
 

@@ -2,8 +2,11 @@ package GameCore.Movement.MacroMovements;
 
 import android.graphics.Point;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import Activities.Game;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 import GameCore.Movement.atomicMovement.FigureAttack;
 import GameCore.Movement.atomicMovement.Movements;
 import GameCore.Utils.CustomIterator;
@@ -46,7 +49,18 @@ public class Attack extends Move {
 
     @Override
     public void processMoves(Game game) {
+        int x = attack.getAttackingFigure().getX();
+        int y = attack.getAttackingFigure().getY();
+        String moved = attack.getAttackingFigure().hasMoved() ? "1" : "0";
         attack.processMove(game);
+        game.getRecorder().record(attack, x, y, moved);
+    }
+
+    @Override
+    public List<Point> getMoveToFields() {
+        ArrayList<Point> out = new ArrayList<>();
+        out.add(attack.getAttackOn());
+        return out;
     }
 
     @Override

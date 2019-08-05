@@ -5,11 +5,11 @@ import android.graphics.Point;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import Activities.Game;
 import GameCore.Field;
 import GameCore.Figure.Figure;
 import GameCore.Figure.GhostPawn;
 import GameCore.Figure.King;
-import GameCore.Game;
 import GameCore.MoveData;
 import GameCore.Movement.MacroMovements.Attack;
 import GameCore.Movement.MacroMovements.SingleMove;
@@ -18,7 +18,7 @@ import GameCore.Movement.MoveEval.PotentialMove;
 import GameCore.Movement.MovementDescriber.Jump;
 import GameCore.Movement.MovementDescriber.MovementCategory;
 import GameCore.Movement.MovementDescriber.SpecialMoveEval;
-import GameCore.Player;
+import GameCore.PlayerTypes.Player;
 
 /**
  * movement evaluator helper class, has methods for detecting all possible movements

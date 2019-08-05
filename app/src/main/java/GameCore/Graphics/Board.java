@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 
 import java.util.ArrayList;
 
@@ -40,13 +41,14 @@ public class Board extends View {
     private Drawable attackable;
     private Drawable special;
     private Paint paint;
-    private int w;
-    private int h;
+    private ImageView imageView;
+    private int fieldSize;
 
 
-    public Board(Context context) {
+    public Board(Context context, int fieldSize) {
         super(context);
         paint = new Paint();
+        this.fieldSize = fieldSize;
     }
 
     public Board(Context context, AttributeSet attributeSet){
@@ -86,6 +88,14 @@ public class Board extends View {
         this.special = special;
     }
 
+    public ImageView getImageView() {
+        return imageView;
+    }
+
+    public void setImageView(ImageView imageView) {
+        this.imageView = imageView;
+    }
+
     public Bitmap getBitmap() {
         return bitmap;
     }
@@ -99,8 +109,8 @@ public class Board extends View {
             throw new IllegalStateException("Board Colors are not set!");
         }
         board = new Field[8][8];
-        for(int row = 0; row < 8; row++){
-            for(int line = 0; line < 8; line++){
+        for (int row = 0; row < fieldSize; row++) {
+            for (int line = 0; line < fieldSize; line++) {
                 int col = (row + line) % 2 != 0 ? darkBrown : lightBrown;
                 board[row][line] = new Field(row, line, col);
             }
@@ -112,8 +122,8 @@ public class Board extends View {
      * resets selection highlight
      */
     public void resetBoard(){
-        for (int row = 0; row < 8; row++) {
-            for (int line = 0; line < 8; line++) {
+        for (int row = 0; row < fieldSize; row++) {
+            for (int line = 0; line < fieldSize; line++) {
                 FieldState fieldState = board[row][line].getState();
                 if (fieldState != ATTACKED & fieldState != ATTACKING)
                     board[row][line].setState(NOTSELECTED);
@@ -125,8 +135,8 @@ public class Board extends View {
      * resets all highlights including threat hightlights
      */
     public void hardResetBoard() {
-        for(int row = 0; row < 8; row++){
-            for(int line = 0; line < 8; line++){
+        for (int row = 0; row < fieldSize; row++) {
+            for (int line = 0; line < fieldSize; line++) {
                 board[row][line].setState(NOTSELECTED);
             }
         }

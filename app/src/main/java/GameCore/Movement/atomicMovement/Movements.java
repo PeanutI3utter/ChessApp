@@ -2,8 +2,8 @@ package GameCore.Movement.atomicMovement;
 
 import android.graphics.Point;
 
+import Activities.Game;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 
 /**
  * class describing micromovements

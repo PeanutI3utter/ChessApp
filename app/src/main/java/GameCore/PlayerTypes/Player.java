@@ -1,4 +1,4 @@
-package GameCore;
+package GameCore.PlayerTypes;
 
 import com.example.chess.R;
 
@@ -8,6 +8,7 @@ import GameCore.Figure.Figure;
 import GameCore.Figure.King;
 
 public abstract class Player {
+    protected String className;
     private boolean player1;
     private boolean threatened;
     private King King;
@@ -73,6 +74,10 @@ public abstract class Player {
         return playerColor;
     }
 
+    public String getClassName() {
+        return className;
+    }
+
     /**
      * returns true if opponent has check on this player
      * @return
@@ -105,8 +110,8 @@ public abstract class Player {
     }
 
     public void onNextTurn(){
-        for (Figure f : figures) {
-            f.onNextTurn();
+        for (int i = 0; i < figures.size(); i++) {
+            figures.get(i).onNextTurn();
         }
     }
 

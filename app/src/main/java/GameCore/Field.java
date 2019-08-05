@@ -8,8 +8,12 @@ import GameCore.Figure.Figure;
 public class Field {
     private Figure[][] field;
 
-    public Field() {
-        this.field = new Figure[8][8];
+    public Field(int size) {
+        this.field = new Figure[size][size];
+    }
+
+    public Figure[][] getField() {
+        return field;
     }
 
     /**
@@ -45,5 +49,13 @@ public class Field {
      */
     public Figure getFigure(Point point) {
         return field[point.x][point.y];
+    }
+
+    public void setField(Figure[][] field) {
+        this.field = field;
+    }
+
+    public Point getSize() {
+        return new Point(field[0].length, field.length);
     }
 }

@@ -1,4 +1,4 @@
-package GameCore.GameModes;
+package Activities.GameModes;
 
 import android.view.View;
 
@@ -6,6 +6,7 @@ import com.example.chess.R;
 
 import java.util.ArrayList;
 
+import Activities.Game;
 import GameCore.Figure.Bishop;
 import GameCore.Figure.Figure;
 import GameCore.Figure.King;
@@ -13,7 +14,6 @@ import GameCore.Figure.Knight;
 import GameCore.Figure.Pawn;
 import GameCore.Figure.Queen;
 import GameCore.Figure.Rook;
-import GameCore.Game;
 import GameCore.GameSaver.SaveLoader;
 import GameCore.PlayerTypes.Player;
 import GameCore.SelectButton;
@@ -80,6 +80,7 @@ public class NormalGame extends Game {
             case "keep":
         }
         ((Pawn)selected).exchange(change);
+        figureCreated(change);
     }
 
     @Override

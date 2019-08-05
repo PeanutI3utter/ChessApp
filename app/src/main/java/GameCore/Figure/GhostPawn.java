@@ -1,27 +1,39 @@
 package GameCore.Figure;
 
 
-import GameCore.Game;
-import GameCore.Player;
+import Activities.Game;
+import GameCore.PlayerTypes.Player;
 
-public class GhostPawn extends Figure {
-    Pawn master;
+public class GhostPawn extends Ghost {
 
-    public GhostPawn(Player owner, Integer x, Integer y, Pawn master, Game game) {
-        super(owner, x, y, game);
-        this.master = master;
+    public GhostPawn(Player owner, Integer x, Integer y, Ghostable master, Game game) {
+        super(owner, x, y, master, game);
     }
 
     @SuppressWarnings("EmptyMethod")
     @Override
     public void updateMoveData() {
+
     }
 
+    @Override
+    public void onNextTurn() {
+        delete();
+    }
 
     @Override
     public void delete() {
         if (game.getField().getFigure(pos.x, pos.y) == this) {
             super.delete();
+        } else {
+            getOwner().getFigures().remove(this);
+            game.getRecorder().onDelete(this);
+        }
+    }
+
+    public void deleteWithoutRecord() {
+        if (game.getField().getFigure(pos.x, pos.y) == this) {
+            super.deleteWithoutRecord();
         } else {
             getOwner().getFigures().remove(this);
         }

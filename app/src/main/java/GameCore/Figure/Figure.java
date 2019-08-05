@@ -2,10 +2,13 @@ package GameCore.Figure;
 
 import android.graphics.Point;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
+import Activities.Game;
+import GameCore.Exceptions.ParsingError;
 import GameCore.Field;
-import GameCore.Game;
 import GameCore.MoveData;
 import GameCore.Movement.MacroMovements.Attack;
 import GameCore.Movement.MacroMovements.Move;
@@ -16,7 +19,7 @@ import GameCore.Movement.MovementDescriber.Direction;
 import GameCore.Movement.MovementDescriber.Jump;
 import GameCore.Movement.MovementDescriber.MovementCategory;
 import GameCore.Movement.MovementDescriber.SpecialMoveEval;
-import GameCore.Player;
+import GameCore.PlayerTypes.Player;
 
 import static GameCore.Movement.MovementDescriber.Direction.DOWN;
 import static GameCore.Movement.MovementDescriber.Direction.UP;
@@ -24,11 +27,10 @@ import static GameCore.Movement.MovementDescriber.Direction.UP;
 /**
  * abstract model of a figure in chess
  */
-@SuppressWarnings("ConstantConditions")
 public abstract class Figure {
     protected Point pos;
-    int image;
-    Game game;
+    protected int image;
+    protected Game game;
     private boolean restricted;
     private Player owner;
     private MoveData md;
@@ -37,6 +39,7 @@ public abstract class Figure {
     protected Field field;
     protected ArrayList<PotentialMove> standardMoves;
     protected ArrayList<SpecialMoveEval> specialMovesEval;
+    protected boolean selectable = true;
 
     public Figure(){
         md = new MoveData();
@@ -140,6 +143,53 @@ public abstract class Figure {
         return game;
     }
 
+    public static Figure fromString(String figureDescription, Player player1, Player player2, Field field, Game game) throws ParsingError {
+        Figure newFigure = null;
+        String[] token = figureDescription.split(",");
+        Player owner = token[4].equalsIgnoreCase("1") ? player1 : player2;
+        boolean moved = token[5].equalsIgnoreCase("1");
+        Integer x = Integer.parseInt(token[1]);
+        Integer y = Integer.parseInt(token[2]);
+        if (token[0].equalsIgnoreCase("1")) {
+            Figure master = field.getFigure(Integer.parseInt(token[6]), Integer.parseInt(token[7]));
+            try {
+                newFigure = getGhost(token[3], owner, x, y, (Ghostable) master, game);
+            } catch (ClassNotFoundException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (NoSuchMethodException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (IllegalAccessException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InvocationTargetException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InstantiationException e) {
+                throw new ParsingError("Error while parsing");
+            }
+        } else {
+            try {
+                newFigure = getFigure(token[3], owner, x, y, game);
+            } catch (ClassNotFoundException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (NoSuchMethodException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (IllegalAccessException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InvocationTargetException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InstantiationException e) {
+                throw new ParsingError("Error while parsing");
+            }
+        }
+        if (newFigure != null) {
+            if (newFigure instanceof King)
+                owner.setKing((King) newFigure);
+            owner.addFigure(newFigure);
+            newFigure.setMoved(moved);
+            field.setField(newFigure, x, y);
+        }
+        return newFigure;
+    }
+
     public ArrayList<PotentialMove> getStandardMoves() {
         return standardMoves;
     }
@@ -219,10 +269,63 @@ public abstract class Figure {
      */
     abstract public void updateMoveData();
 
+    public static Figure fromStringWithoutSet(String figureDescription, Player player1, Player player2, Field field, Game game) throws ParsingError {
+        Figure newFigure = null;
+        String[] token = figureDescription.split(",");
+        Player owner = token[4].equalsIgnoreCase("1") ? player1 : player2;
+        boolean moved = token[5].equalsIgnoreCase("1");
+        Integer x = Integer.parseInt(token[1]);
+        Integer y = Integer.parseInt(token[2]);
+        if (token[0].equalsIgnoreCase("1")) {
+            Figure master = field.getFigure(Integer.parseInt(token[6]), Integer.parseInt(token[7]));
+            try {
+                newFigure = getGhost(token[3], owner, x, y, (Ghostable) master, game);
+            } catch (ClassNotFoundException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (NoSuchMethodException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (IllegalAccessException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InvocationTargetException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InstantiationException e) {
+                throw new ParsingError("Error while parsing");
+            }
+        } else {
+            try {
+                newFigure = getFigure(token[3], owner, x, y, game);
+            } catch (ClassNotFoundException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (NoSuchMethodException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (IllegalAccessException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InvocationTargetException e) {
+                throw new ParsingError("Error while parsing");
+            } catch (InstantiationException e) {
+                throw new ParsingError("Error while parsing");
+            }
+        }
+        if (newFigure != null) {
+            newFigure.setMoved(moved);
+        }
+        return newFigure;
+    }
 
-    public void delete() {
-        getOwner().getFigures().remove(this);
-        field.setField(null, this.getX(), this.getY());
+    /**
+     * gets Figure out of class name
+     *
+     * @param className name of figure class
+     * @param owner     owner of the figure
+     * @param x
+     * @param y
+     * @param newGame   game in which the figure participates in
+     * @return
+     */
+    public static Figure getFigure(String className, Player owner, Integer x, Integer y, Game newGame) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Class figClass = Class.forName(className);
+        Constructor constructor = figClass.getConstructor(Player.class, Integer.class, Integer.class, Game.class);
+        return (Figure) constructor.newInstance(owner, x, y, newGame);
     }
 
     /**
@@ -237,8 +340,6 @@ public abstract class Figure {
     }
 
     /**
-     * TODO
-     * fix ghost pawn deletion prob when an ally figure moves to field
      *
      * @param x
      * @param y
@@ -283,7 +384,7 @@ public abstract class Figure {
 
     /**
      * @param range range a figure can move
-     * @deprecated marks all fields figure can move to/ attack
+     * deprecated
 
     public void horizontalMove(int range) {
     ArrayList<Point> available = getMd().getAvailableMoves();
@@ -553,5 +654,46 @@ public abstract class Figure {
         return Math.abs((double) pos.x - x) <= 1 && Math.abs((double) pos.y - y) <= 1;
     }
 
+    /**
+     * gets ghost Figure out of class name
+     *
+     * @param className name of figure class
+     * @param owner     owner of the figure
+     * @param x
+     * @param y
+     * @param newGame   game in which the figure participates in
+     * @return
+     */
+    public static Ghost getGhost(String className, Player owner, Integer x, Integer y, Ghostable master, Game newGame) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Class figClass = Class.forName(className);
+        Constructor constructor = figClass.getConstructor(Player.class, Integer.class, Integer.class, Ghostable.class, Game.class);
+        return (Ghost) constructor.newInstance(owner, x, y, master, newGame);
+    }
 
+    public boolean isSelectable() {
+        return selectable;
+    }
+
+    public void delete() {
+        getOwner().getFigures().remove(this);
+        field.setField(null, this.getX(), this.getY());
+        game.getRecorder().onDelete(this);
+    }
+
+    public void deleteWithoutRecord() {
+        getOwner().getFigures().remove(this);
+        field.setField(null, this.getX(), this.getY());
+    }
+
+    public String toString() {
+        String out = "";
+        String moved = hasMoved() ? "1" : "0";
+        String ghost = (this instanceof Ghost) ? "1" : "0";
+        String player1 = this.getOwner().player1() ? "1" : "0";
+        out += ghost + "," + getX() + "," + getY() + "," + this.getClass().getName() + "," + player1 + "," + moved;
+        if (this instanceof Ghost) {
+            out += "," + ((Ghost) this).getMaster().getPos().x + "," + ((Ghost) this).getMaster().getPos().y;
+        }
+        return out;
+    }
 }

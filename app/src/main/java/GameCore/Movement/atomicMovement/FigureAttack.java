@@ -2,8 +2,8 @@ package GameCore.Movement.atomicMovement;
 
 import android.graphics.Point;
 
+import Activities.Game;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 
 /**
  * micromovement: attack;; refer to FigureMovement
@@ -50,6 +50,6 @@ public class FigureAttack extends Movements {
 
     @Override
     public Figure getMovingFig() {
-        return getAttackedFigure();
+        return getAttackingFigure();
     }
 }

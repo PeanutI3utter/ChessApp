@@ -2,8 +2,11 @@ package GameCore.Movement.MacroMovements;
 
 import android.graphics.Point;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import Activities.Game;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 import GameCore.Movement.MovementDescriber.MovementCategory;
 import GameCore.Movement.atomicMovement.FigureMovement;
 import GameCore.Movement.atomicMovement.Movements;
@@ -47,7 +50,19 @@ public class SingleMove extends Move {
 
     @Override
     public void processMoves(Game game) {
-        popMove().processMove(game);
+        Movements movement = popMove();
+        int x = movement.getMovingFig().getX();
+        int y = movement.getMovingFig().getY();
+        String moved = movement.getMovingFig().hasMoved() ? "1" : "0";
+        movement.processMove(game);
+        game.getRecorder().record(movement, x, y, moved);
+    }
+
+    @Override
+    public List<Point> getMoveToFields() {
+        ArrayList<Point> out = new ArrayList<>();
+        out.add(move.getMoveTo());
+        return out;
     }
 
     @Override

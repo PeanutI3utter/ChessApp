@@ -2,8 +2,8 @@ package GameCore.Movement.atomicMovement;
 
 import android.graphics.Point;
 
+import Activities.Game;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 import GameCore.Movement.MovementDescriber.MovementCategory;
 
 /**
@@ -49,6 +49,7 @@ public class FigureMovement extends Movements {
             movingFig.moveViaOffset(offSet, directionOrJump);
         else
             movingFig.move(moveTo);
+        game.getRecorder();
     }
 
     @Override

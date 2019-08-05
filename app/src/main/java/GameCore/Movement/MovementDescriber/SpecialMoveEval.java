@@ -2,8 +2,8 @@ package GameCore.Movement.MovementDescriber;
 
 import java.util.ArrayList;
 
+import Activities.Game;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 import GameCore.Movement.MacroMovements.SpecialMove;
 
 

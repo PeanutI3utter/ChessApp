@@ -1,10 +1,11 @@
 package GameCore.Mechanisms;
 
 import android.graphics.Point;
+import android.view.View;
 
+import Activities.Game;
 import GameCore.Field;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 import GameCore.Movement.MacroMovements.Move;
 
 /**
@@ -21,7 +22,7 @@ public class InputHandler {
         this.moveProcessor = moveProcessor;
     }
 
-    public void handleInput(Point clickedPoint) {
+    public void handleBoardInput(Point clickedPoint) {
         Figure clickedFigure = field.getFigure(clickedPoint);
         Figure selectedFigure = game.getSelected();
         if (selectedFigure == null)
@@ -37,5 +38,9 @@ public class InputHandler {
             game.resetSelected();
         else
             game.select(clickedFigure);
+    }
+
+    public void handleSelectorInput(View view) {
+        game.selectorAction(view);
     }
 }

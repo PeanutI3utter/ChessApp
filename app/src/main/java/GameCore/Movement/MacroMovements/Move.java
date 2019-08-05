@@ -2,7 +2,9 @@ package GameCore.Movement.MacroMovements;
 
 import android.graphics.Point;
 
-import GameCore.Game;
+import java.util.List;
+
+import Activities.Game;
 import GameCore.Movement.atomicMovement.Movements;
 import GameCore.Utils.CustomIterator;
 
@@ -41,6 +43,8 @@ public abstract class Move {
     public boolean modifiesGame() {
         return modifyGame;
     }
+
+    abstract public List<Point> getMoveToFields();
 
     /**
      * @return customIterator for micromovements

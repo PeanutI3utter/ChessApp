@@ -4,8 +4,8 @@ import android.graphics.Point;
 
 import java.util.LinkedList;
 
+import Activities.Game;
 import GameCore.Figure.Figure;
-import GameCore.Game;
 import GameCore.Movement.MovementDescriber.MovementCategory;
 import GameCore.Movement.atomicMovement.FigureMovement;
 import GameCore.Movement.atomicMovement.Movements;
@@ -78,8 +78,14 @@ public abstract class SpecialMove extends Move {
 
     @Override
     public void processMoves(Game game) {
-        while (hasMoves())
-            popMove().processMove(game);
+        while (hasMoves()) {
+            Movements movement = popMove();
+            int x = movement.getMovingFig().getX();
+            int y = movement.getMovingFig().getY();
+            String moved = movement.getMovingFig().hasMoved() ? "1" : "0";
+            movement.processMove(game);
+            game.getRecorder().record(movement, x, y, moved);
+        }
     }
 
     @Override
