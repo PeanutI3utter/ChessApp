@@ -31,9 +31,10 @@ public class Recorder {
     public Recorder(Game game, String record) {
         this.game = game;
         this.records = new LinkedList<>();
-        for (String string : record.split("#"))
-            records.addLast(string);
-        buffer = "";
+        String[] divided = record.split("#");
+        buffer = divided[0];
+        for (int i = 1; i < divided.length; i++)
+            records.addLast(divided[i]);
     }
 
     public void recordMovement(Move move) {
@@ -90,6 +91,7 @@ public class Recorder {
 
     public String toString() {
         String out = "";
+        out += buffer + "#";
         for (int i = 0; i < records.size(); i++) {
             String string = records.get(i);
             out += string;

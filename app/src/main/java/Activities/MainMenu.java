@@ -49,7 +49,7 @@ public class MainMenu extends AppCompatActivity {
             startActivity(i);
         });
         findViewById(R.id.infobutton).setOnClickListener(view -> {
-            new AlertDialog.Builder(MainMenu.this).setTitle("Information").setMessage("OpenChess\nBeta 2\n")
+            new AlertDialog.Builder(MainMenu.this).setTitle("Information").setMessage("OpenChess\nBeta 2.1\n")
 
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override

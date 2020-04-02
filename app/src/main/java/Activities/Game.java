@@ -355,11 +355,11 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
         Player oldplayer = currentPlayer;
         currentPlayer = queue.next();
         currentPlayer.reset();
+        currentPlayer.onNextTurn();
         oldplayer.reset();
         oldplayer.update();
         board.hardResetBoard();
         currentPlayer.update();
-        currentPlayer.onNextTurn();
         switch (checkWin()){
             case 0:
                 break;
@@ -389,6 +389,39 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
     public void nextTurn() {
         recorder.onNextTurn();
         onNextTurn();
+    }
+
+    public void update(){
+        resetSelected();
+        currentPlayer.reset();
+        queue.getOtherPlayer(currentPlayer).reset();
+        queue.getOtherPlayer(currentPlayer).update();
+        board.hardResetBoard();
+        currentPlayer.update();
+        switch (checkWin()){
+            case 0:
+                break;
+            case 1:
+                win(queue.getOtherPlayer(currentPlayer));
+                break;
+            case 2:
+                gameDraw();
+                break;
+        }
+        if (currentPlayer.isThreatened())
+            board.highlightAttack(currentPlayer.getKing());
+        selector.update(currentPlayer);
+        if (recorder.canRewind()) {
+            rewindButton.setEnabled(true);
+        } else {
+            rewindButton.setEnabled(false);
+        }
+        if (recorder.canUndoRewind()) {
+            redoButton.setEnabled(true);
+        } else {
+            redoButton.setEnabled(false);
+        }
+        draw();
     }
 
     // highlight all available moves for selected figure
@@ -458,8 +491,7 @@ public abstract class Game extends AppCompatActivity implements View.OnClickList
             newGame();
         }
         initBasicComponents();
-        onNextTurn(); // syncing queue
-        onNextTurn(); // next turn for updating move data and detecting win/loss/draw
+        update();
         draw();
     }
 
