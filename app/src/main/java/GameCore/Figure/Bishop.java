@@ -2,24 +2,41 @@ package GameCore.Figure;
 
 import com.example.chess.R;
 
+import Activities.Game;
 import GameCore.MoveData;
-import GameCore.Player;
+import GameCore.Movement.MoveEval.PotentialMove;
+import GameCore.Movement.MovementDescriber.Direction;
+import GameCore.PlayerTypes.Player;
 
-import static GameCore.Direction.DOWNLEFT;
-import static GameCore.Direction.DOWNRIGHT;
-import static GameCore.Direction.UPLEFT;
-import static GameCore.Direction.UPRIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.DOWNLEFT;
+import static GameCore.Movement.MovementDescriber.Direction.DOWNRIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.UPLEFT;
+import static GameCore.Movement.MovementDescriber.Direction.UPRIGHT;
+
 
 public class Bishop extends Figure{
-    public Bishop(Player owner, int x, int y) {
-        super(owner, x, y);
+    private Direction[] directions = {UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT};
+
+    public Bishop(Player owner, Integer x, Integer y, Game game) {
+        super(owner, x, y, game);
         image = owner.player1() ? R.drawable.bishopwhite : R.drawable.bishopblack;
+        for (Direction direction : directions) {
+            standardMoves.add(new PotentialMove(direction, 8, 0, true, true));
+        }
     }
 
+
     @Override
-    public void availableMoves(Figure[][] field) {
-        MoveData md = new MoveData();
-        diagonalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
-        setMd(md);
+    public void updateMoveData() {
+        MoveData md = getMd();
+        md.reset();
+        game.getMoveEvaluator().evalMoves(this);
+        if (isRestricted()) {
+            md.intersection(getRestrictions());
+        }
+        if (getOwner().isThreatened()) {
+            md.intersection(getOwner().getKing().getRestrictions());
+        }
     }
+
 }

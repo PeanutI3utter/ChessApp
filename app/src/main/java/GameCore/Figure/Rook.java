@@ -2,25 +2,44 @@ package GameCore.Figure;
 
 import com.example.chess.R;
 
+import Activities.Game;
 import GameCore.MoveData;
-import GameCore.Player;
+import GameCore.Movement.MoveEval.PotentialMove;
+import GameCore.Movement.MovementDescriber.Direction;
+import GameCore.PlayerTypes.Player;
 
-import static GameCore.Direction.DOWN;
-import static GameCore.Direction.LEFT;
-import static GameCore.Direction.RIGHT;
-import static GameCore.Direction.UP;
+import static GameCore.Movement.MovementDescriber.Direction.DOWN;
+import static GameCore.Movement.MovementDescriber.Direction.LEFT;
+import static GameCore.Movement.MovementDescriber.Direction.RIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.UP;
+
 
 public class Rook extends Figure {
-    public Rook(Player owner, int x, int y) {
-        super(owner, x, y);
+    Direction[] directions = {UP, LEFT, RIGHT, DOWN};
+
+    public Rook(){
+        super();
+    }
+
+    public Rook(Player owner, Integer x, Integer y, Game game) {
+        super(owner, x, y, game);
         image = owner.player1() ? R.drawable.rookwhite : R.drawable.rookblack;
+        for (Direction d : directions) {
+            standardMoves.add(new PotentialMove(d, 8, 0, true, true));
+        }
     }
 
     @Override
-    public void availableMoves(Figure[][] field) {
-        MoveData md = new MoveData();
-        horizontalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, LEFT, RIGHT);
-        verticalMove(field, md.getAvailableMoves(), md.getAttackbleFields(), 8, UP, DOWN);
-        setMd(md);
+    public void updateMoveData() {
+        MoveData md = getMd();
+        md.reset();
+        game.getMoveEvaluator().evalMoves(this);
+        if (isRestricted()) {
+            md.intersection(getRestrictions());
+        }
+        if (getOwner().isThreatened()) {
+            md.intersection(getOwner().getKing().getRestrictions());
+        }
     }
+
 }

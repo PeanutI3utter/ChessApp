@@ -2,30 +2,49 @@ package GameCore.Figure;
 
 import com.example.chess.R;
 
+import Activities.Game;
 import GameCore.MoveData;
-import GameCore.Player;
+import GameCore.Movement.MoveEval.PotentialMove;
+import GameCore.Movement.MovementDescriber.Direction;
+import GameCore.PlayerTypes.Player;
 
-import static GameCore.Direction.DOWN;
-import static GameCore.Direction.DOWNLEFT;
-import static GameCore.Direction.DOWNRIGHT;
-import static GameCore.Direction.LEFT;
-import static GameCore.Direction.RIGHT;
-import static GameCore.Direction.UP;
-import static GameCore.Direction.UPLEFT;
-import static GameCore.Direction.UPRIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.DOWN;
+import static GameCore.Movement.MovementDescriber.Direction.DOWNLEFT;
+import static GameCore.Movement.MovementDescriber.Direction.DOWNRIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.LEFT;
+import static GameCore.Movement.MovementDescriber.Direction.RIGHT;
+import static GameCore.Movement.MovementDescriber.Direction.UP;
+import static GameCore.Movement.MovementDescriber.Direction.UPLEFT;
+import static GameCore.Movement.MovementDescriber.Direction.UPRIGHT;
 
 public class Queen extends Figure {
-    public Queen(Player owner, int x, int y) {
-        super(owner, x, y);
+    Direction[] directions = {UP, LEFT, RIGHT, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT};
+
+
+    public Queen(){
+        super();
+    }
+
+
+    public Queen(Player owner, Integer x, Integer y, Game game) {
+        super(owner, x, y, game);
         image = owner.player1() ? R.drawable.queenwhite : R.drawable.queenblack;
+        for (Direction direction : directions) {
+            standardMoves.add(new PotentialMove(direction, 8, 0, true, true));
+        }
     }
 
     @Override
-    public void availableMoves(Figure[][] field) {
-        MoveData data = new MoveData();
-        horizontalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 8, RIGHT, LEFT);
-        verticalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 8, UP, DOWN);
-        diagonalMove(field, data.getAvailableMoves(), data.getAttackbleFields(), 9, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT);
-        setMd(data);
+    public void updateMoveData() {
+        MoveData data = getMd();
+        data.reset();
+        game.getMoveEvaluator().evalMoves(this);
+        if (isRestricted()) {
+            data.intersection(getRestrictions());
+        }
+        if (getOwner().isThreatened()) {
+            data.intersection(getOwner().getKing().getRestrictions());
+        }
     }
+
 }

@@ -1,40 +1,45 @@
 package GameCore.Figure;
 
-import android.graphics.Point;
-
 import com.example.chess.R;
 
-import java.util.ArrayList;
-
+import Activities.Game;
 import GameCore.MoveData;
-import GameCore.Player;
+import GameCore.Movement.MoveEval.PotentialMove;
+import GameCore.Movement.MovementDescriber.Jump;
+import GameCore.Movement.MovementDescriber.MovementCategory;
+import GameCore.PlayerTypes.Player;
+
+import static GameCore.Movement.MovementDescriber.Jump.DDL;
+import static GameCore.Movement.MovementDescriber.Jump.DDR;
+import static GameCore.Movement.MovementDescriber.Jump.DLL;
+import static GameCore.Movement.MovementDescriber.Jump.DRR;
+import static GameCore.Movement.MovementDescriber.Jump.ULL;
+import static GameCore.Movement.MovementDescriber.Jump.URR;
+import static GameCore.Movement.MovementDescriber.Jump.UUL;
+import static GameCore.Movement.MovementDescriber.Jump.UUR;
 
 public class Knight extends Figure{
-    private int[][] moves = {{1, -2}, {-1, -2}, {1, 2}, {-1, 2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1}};
-    public Knight(Player owner, int x, int y) {
-        super(owner, x, y);
-        image = owner.player1() ? R.drawable.horsewhite : R.drawable.horseblack;
 
+    public Knight(Player owner, Integer x, Integer y, Game game) {
+        super(owner, x, y, game);
+        image = owner.player1() ? R.drawable.horsewhite : R.drawable.horseblack;
+        Jump[] moves = {UUL, UUR, ULL, URR, DLL, DRR, DDL, DDR};
+        for (MovementCategory jump : moves) {
+            standardMoves.add(new PotentialMove(jump, 1, 0, true, true));
+        }
     }
 
     @Override
-    public void availableMoves(Figure[][] field) {
-        MoveData md = new MoveData();
-        ArrayList<Point> av = md.getAvailableMoves();
-        ArrayList<Point> at = md.getAttackbleFields();
-        for (int[] move : moves) {
-            int ex = pos.x + move[0];
-            int why = pos.y + move[1];
-            if (ex < 8 & ex >= 0 & why < 8 & why >= 0) {
-                Figure fig = field[ex][why];
-                if (!(fig instanceof PlaceHolder)) {
-                    if (fig.getOwner() != getOwner()) {
-                        at.add(new Point(ex, why));
-                    }
-                }
-                av.add(new Point(ex, why));
-            }
+    public void updateMoveData() {
+        MoveData md = getMd();
+        md.reset();
+        game.getMoveEvaluator().evalMoves(this);
+        if (isRestricted()) {
+            md.intersection(getRestrictions());
         }
-        setMd(md);
+        if (getOwner().isThreatened()) {
+            md.intersection(getOwner().getKing().getRestrictions());
+        }
     }
+
 }
